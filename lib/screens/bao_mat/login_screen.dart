@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: () {
         // logic kiểm tra
 
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/main_manager');
       },
       child: Text('ĐĂNG NHẬP'),
       style: ElevatedButton.styleFrom(

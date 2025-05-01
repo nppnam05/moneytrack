@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/screens/main_manager.dart';
 import 'screens/screens.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/add_budget',
+      initialRoute: '/main_manager',
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
         Widget? page;
@@ -25,14 +27,8 @@ class MyApp extends StatelessWidget {
           case '/login':
             page = LoginScreen(title: 'Đăng nhập',);
             break;
-          case '/forgot_password':
-            page = ForgotPasswordScreen(title: 'Quên mật khẩu',);
-            break;
-            case '/add_budget':
-            page = AddBudgetScreen(title: 'thêm ngân sách',);
-            break;
-          case '/home':
-            page = HomeScreen(title: 'Trang chủ',);
+          case '/main_manager':
+            page = MainManagerScreen();
             break;
           case '/transactions':
             page = TransactionsScreen(title: 'sổ giao dịch',);

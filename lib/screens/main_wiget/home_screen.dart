@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:moneytrack/models/category_static.dart';
+import 'package:moneytrack/models/category.dart';
+import 'package:moneytrack/models/user.dart';
+import '../../models/budget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -14,21 +16,26 @@ enum TimeRange { week, month }
 class _HomeScreenState extends State<HomeScreen> {
   TimeRange _selectedRange = TimeRange.week;
   final costController = TextEditingController(text: '0 đ');
-  List<CategoryStatic> CategoryStaticList = [
-    CategoryStatic("Food", 1000),
-    CategoryStatic("Rental", 100),
-    CategoryStatic("Shopping", 50),
+  var user = User(1, "aaaa", "aaa", "a", 1000000000, 100000000000);
+  List<Category> categories = [
+    Category(1, "Food", 1000),
+    Category(2, "Rental", 100),
+    Category(3, "Shopping", 50),
   ];
-  List<CategoryStatic> array = [
-  CategoryStatic("Food", 1000),
-  CategoryStatic("Rental", 100),
-  CategoryStatic("Shopping", 50),
-  CategoryStatic("Transport", 200),
-  CategoryStatic("Entertainment", 150),
-  CategoryStatic("Utilities", 80),
-];
+  List<Category> array = [
+    Category(4, "Food", 1000),
+    Category(5, "Rental", 10),
+    Category(6, "Shopping", 50),
+    Category(7, "Transport", 200),
+    Category(8, "Entertainment", 150),
+    Category(9, "Utilities", 80),
+  ];
 
-  
+   final List<Budget> budgets = [
+    Budget(1, 1, 1, 5000000, 5, 2025, 1696118400000),
+    Budget(2, 1, 2, 3000000, 5, 2025, 1696118400000),
+    Budget(3, 1, 3, 2000000, 5, 2025, 1696118400000),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -41,18 +48,88 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _tienMat(),
             const SizedBox(height: 10),
-            _radioThoiGian(),
+            _totalIncome(), // tổng thu nhập
+            const SizedBox(height: 10),
+            _totalExpense(), // tổng chi tiêu
+            const SizedBox(height: 10),
+             _radioThoiGian(),
             const SizedBox(height: 10),
             Text(
               'Chi tiêu nhiều nhất',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(CategoryStaticList),
+            _itemListChiTieu(categories),
             Text(
               'Các khoản chi tiêu khác',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(array)
+            _itemListChiTieu(array),
+            const SizedBox(height: 10),
+            const Text(
+              'Danh sách ngân sách',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+             _budgetList(), // danh sách ngân sách
+          ],
+        ),
+      ),
+    );
+  }
+  // Hàm hiển thị danh sách ngân sách
+  Widget _budgetList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: budgets.length,
+      itemBuilder: (context, index) {
+        final budget = budgets[index];
+        return ListTile(
+          title: Text('${budget.amount.toStringAsFixed(0)} VNĐ'),
+        );
+      },
+    );
+  }
+
+  // Hàm tính và hiển thị tổng chi tiêu
+  Widget _totalExpense() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tổng chi tiêu',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${user.total_expenditure.toStringAsFixed(2)} VNĐ',
+              style: const TextStyle(fontSize: 16, color: Colors.red),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Hàm tính và hiển thị tổng thu nhập
+  Widget _totalIncome() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tổng thu nhập',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${user.total_revenue.toStringAsFixed(2)} VNĐ',
+              style: const TextStyle(fontSize: 16, color: Colors.green),
+            ),
           ],
         ),
       ),
@@ -90,10 +167,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-// Tiền mặt 
+  // Tiền mặt
   Widget _tienMat() {
-    return 
-    Container(
+    return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.green[100],
@@ -135,21 +211,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  
-  // Danh sách chi tiêu 
-  Widget _itemListChiTieu(List<CategoryStatic> CategoryStaticList) {
+  // Danh sách chi tiêu
+  Widget _itemListChiTieu(List<Category> Category) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: CategoryStaticList.length,
+      itemCount: Category.length,
       itemBuilder: (context, index) {
-        final categoryStatic = CategoryStaticList[index];
+        final categoryStatic = Category[index];
         return _createItem(categoryStatic);
       },
     );
   }
 
-  Widget _createItem(CategoryStatic category) {
+  Widget _createItem(Category category) {
     IconData icon;
     Color color;
 
@@ -177,8 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Icon(icon, color: Colors.white),
       ),
       title: Text(category.name),
-      trailing: Text('${(category.cost/1150.0).toStringAsFixed(2)}%'),
+      trailing: Text('${(category.cost / 1150.0).toStringAsFixed(2)}%'),
     );
   }
-
 }
