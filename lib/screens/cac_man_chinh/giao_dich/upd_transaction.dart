@@ -13,11 +13,39 @@ class UpdTransaction extends StatefulWidget {
 
 class _UpdTransactionState extends State<UpdTransaction> {
   // Giả lập danh sách giao dịch (trong thực tế, bạn có thể lấy từ SQLite)
-  final List<Transaction> _transactions = [
-    Transaction(1, 1, 1, 'Chi', 200000, 'Mua đồ ăn', DateTime(2025, 5, 1).millisecondsSinceEpoch, DateTime.now().millisecondsSinceEpoch),
-    Transaction(2, 1, 2, 'Chi', 1000000, 'Mua quần áo', DateTime(2025, 5, 2).millisecondsSinceEpoch, DateTime.now().millisecondsSinceEpoch),
-    Transaction(3, 1, 5, 'Thu', 5000000, 'Lương tháng', DateTime(2025, 5, 3).millisecondsSinceEpoch, DateTime.now().millisecondsSinceEpoch),
-  ];
+  final List<TransactionModel > _transactions = [
+  TransactionModel (
+    id: 1,
+    userId: 1,
+    categoryId: 1,
+    type: 'Chi',
+    amount: 200000,
+    description: 'Mua đồ ăn',
+    transactionDate: DateTime(2025, 5, 1).millisecondsSinceEpoch,
+    createdAt: DateTime.now().millisecondsSinceEpoch,
+  ),
+  TransactionModel (
+    id: 2,
+    userId: 1,
+    categoryId: 2,
+    type: 'Chi',
+    amount: 1000000,
+    description: 'Mua quần áo',
+    transactionDate: DateTime(2025, 5, 2).millisecondsSinceEpoch,
+    createdAt: DateTime.now().millisecondsSinceEpoch,
+  ),
+  TransactionModel (
+    id: 3,
+    userId: 1,
+    categoryId: 3,
+    type: 'Thu',
+    amount: 5000000,
+    description: 'Lương tháng',
+    transactionDate: DateTime(2025, 5, 3).millisecondsSinceEpoch,
+    createdAt: DateTime.now().millisecondsSinceEpoch,
+  ),
+];
+
 
   // Danh sách danh mục (giả lập)
   final Map<int, String> _categories = {
@@ -30,7 +58,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
   final List<String> _types = ['Thu', 'Chi'];
 
   // Biến để lưu trạng thái chỉnh sửa
-  Transaction? _editingTransaction;
+  TransactionModel ? _editingTransaction;
 
     @override
   Widget build(BuildContext context) {
@@ -54,7 +82,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
   }
 
   // Hàm tạo item trong ListView
-  Widget _itemTransaction(Transaction transaction) {
+  Widget _itemTransaction(TransactionModel  transaction) {
     bool isEditing = _editingTransaction == transaction;
 
     return Card(
@@ -68,8 +96,8 @@ class _UpdTransactionState extends State<UpdTransaction> {
             ),
             title: Text("${transaction.amount.toStringAsFixed(2)} VNĐ"),
             subtitle: Text(
-              "Danh mục: ${_categories[transaction.category_id]}\n"
-              "Ngày: ${DateTime.fromMillisecondsSinceEpoch(transaction.transaction_date).toString().substring(0, 10)}",
+              "Danh mục: ${_categories[transaction.categoryId]}\n"
+              "Ngày: ${DateTime.fromMillisecondsSinceEpoch(transaction.transactionDate).toString().substring(0, 10)}",
             ),
             onTap: () {
               setState(() {
@@ -84,12 +112,12 @@ class _UpdTransactionState extends State<UpdTransaction> {
   }
 
   // Hàm tạo form chỉnh sửa
-  Widget _buildEditForm(Transaction transaction) {
-    int selectedCategoryId = transaction.category_id;
+  Widget _buildEditForm(TransactionModel  transaction) {
+    int selectedCategoryId = transaction.categoryId;
     String selectedType = transaction.type;
     TextEditingController amountController = TextEditingController(text: transaction.amount.toString());
     TextEditingController descriptionController = TextEditingController(text: transaction.description);
-    DateTime selectedDate = DateTime.fromMillisecondsSinceEpoch(transaction.transaction_date);
+    DateTime selectedDate = DateTime.fromMillisecondsSinceEpoch(transaction.transactionDate);
 
     return Padding(
       padding: EdgeInsets.all(16.0),
@@ -193,15 +221,15 @@ class _UpdTransactionState extends State<UpdTransaction> {
               ElevatedButton(
                 onPressed: () {
                   // Cập nhật giao dịch
-                  final updatedTransaction = Transaction(
-                    transaction.id,
-                    transaction.user_id,
-                    selectedCategoryId!,
-                    selectedType,
-                    double.parse(amountController.text),
-                    descriptionController.text,
-                    selectedDate.millisecondsSinceEpoch,
-                    transaction.created_at,
+                  final updatedTransaction = TransactionModel (
+                    id: transaction.id,
+                    userId: transaction.userId,
+                    categoryId: selectedCategoryId!,
+                    type: selectedType,
+                    amount: double.parse(amountController.text),
+                    description: descriptionController.text,
+                    transactionDate: selectedDate.millisecondsSinceEpoch,
+                    createdAt: transaction.createdAt,
                   );
 
                   setState(() {

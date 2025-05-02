@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/category.dart';
 import 'package:moneytrack/models/user.dart';
 import '../../models/budget.dart';
-import '../chi_tieu_pie_chart.dart';
+import '../../widgets/chi_tieu_pie_chart.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
   final String title;
@@ -16,25 +16,25 @@ enum TimeRange { week, month }
 class _HomeScreenState extends State<HomeScreen> {
   TimeRange _selectedRange = TimeRange.week;
   final costController = TextEditingController(text: '0 đ');
-  var user = User(1, "aaaa", "aaa", "a", 1000000000, 100000000000);
+  var user = User(id: 1,name: "aaaa",email: "aaa",password: "a",totalExpenditure: 1000000000,totalRevenue: 100000000000);
   List<Category> categories = [
-    Category(1, "Food", 1000),
-    Category(2, "Rental", 100),
-    Category(3, "Shopping", 50),
+    Category(id: 1,name:  "Food",cost:  1000),
+    Category(id:  2,name:  "Rental",cost:  100),
+    Category(id:  3,name:  "Shopping",cost:  50),
   ];
   List<Category> array = [
-    Category(4, "Food", 1000),
-    Category(5, "Rental", 10),
-    Category(6, "Shopping", 50),
-    Category(7, "Transport", 200),
-    Category(8, "Entertainment", 150),
-    Category(9, "Utilities", 80),
+    Category(id: 4,name:  "Food",cost:  1000),
+    Category(id: 5,name:  "Rental",cost:  10),
+    Category(id: 6,name: "Shopping",cost: 50),
+    Category(id: 7,name: "Transport",cost: 200),
+    Category(id: 8,name: "Entertainment",cost: 150),
+    Category(id: 9,name: "Utilities",cost: 80),
   ];
 
   final List<Budget> budgets = [
-    Budget(1, 1, 1, 5000000, 5, 2025, 1696118400000),
-    Budget(2, 1, 2, 3000000, 5, 2025, 1696118400000),
-    Budget(3, 1, 3, 2000000, 5, 2025, 1696118400000),
+    Budget(id: 1,userId: 1 ,categoryId: 1,amount: 5000000,month:  5,year:  2025,createdAt: 1696118400000),
+    Budget(id:2,userId: 1 ,categoryId:  2,amount: 3000000,month:  5,year: 2025,createdAt: 1696118400000),
+    Budget(id:3,userId: 1 ,categoryId: 3,amount: 2000000,month:  5,year:  2025,createdAt:  1696118400000),
   ];
 
   @override
@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user.total_revenue.toStringAsFixed(0)} VNĐ',
+                  '${user.totalRevenue.toStringAsFixed(0)} VNĐ',
                   style: TextStyle(color: Colors.green),
                 ),
               ],
@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user.total_expenditure.toStringAsFixed(0)} VNĐ',
+                  '${user.totalExpenditure.toStringAsFixed(0)} VNĐ',
                   style: TextStyle(color: Colors.red),
                 ),
               ],

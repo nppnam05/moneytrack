@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moneytrack/screens/main_manager.dart';
+import 'package:moneytrack/screens/main_screen.dart';
 import 'screens/screens.dart';
 
 
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/main_manager',
+      initialRoute: '/login',
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
         Widget? page;

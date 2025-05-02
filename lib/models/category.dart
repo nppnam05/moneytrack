@@ -1,7 +1,17 @@
-class Category {
-  int id;
-  String name;
-  double cost;
+import 'package:floor/floor.dart';
 
-  Category(this.id, this.name, this.cost);
+@Entity(tableName: 'categories')
+class Category {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String name;
+
+  final double cost;
+
+  Category({
+    this.id,
+    required this.name,
+    required this.cost,
+  });
 }

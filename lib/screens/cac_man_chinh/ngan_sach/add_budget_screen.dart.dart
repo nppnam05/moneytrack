@@ -13,9 +13,9 @@ class AddBudgetScreen extends StatefulWidget {
 
 class _AddBudgetScreenState extends State<AddBudgetScreen> {
   List<Category> categories = [
-    Category(1, "Food", 1000),
-    Category(2, "Rental", 100),
-    Category(3, "Shopping", 50),
+    Category(id: 1,name: "Food",cost: 1000),
+    Category(id: 2,name: "Rental",cost: 100),
+    Category(id: 3,name: "Shopping",cost: 50),
   ];
 
   // Controller cho các TextField
@@ -149,13 +149,13 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
     // Tạo Budgets mới
     Budget newBudget = Budget(
-      0,
-      _userId,
-      _selectedCategory!.id,
-      double.parse(_amountController.text),
-      int.parse(_monthController.text),
-      int.parse(_yearController.text),
-      DateTime.now().millisecondsSinceEpoch, // created_at: Timestamp hiện tại
+      id: 0,
+      userId: _userId,
+      categoryId: _selectedCategory!.id!,
+      amount: double.parse(_amountController.text),
+      month: int.parse(_monthController.text),
+      year: int.parse(_yearController.text),
+      createdAt: DateTime.now().millisecondsSinceEpoch, // created_at: Timestamp hiện tại
     );
   }
 }

@@ -1,11 +1,32 @@
-class Transaction {
-  int id;
-  int user_id;
-  int category_id;
-  String type;
-  double amount;
-  String description;
-  int transaction_date;
-  int created_at;
-  Transaction(this.id, this.user_id, this.category_id, this.type, this.amount, this.description, this.transaction_date, this.created_at);
+import 'package:floor/floor.dart';
+
+@Entity(tableName: 'transactions')
+class TransactionModel {
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final int userId;
+
+  final int categoryId;
+
+  final String type;
+
+  final double amount;
+
+  final String description;
+
+  final int transactionDate;
+
+  final int createdAt;
+
+  TransactionModel({
+    this.id,
+    required this.userId,
+    required this.categoryId,
+    required this.type,
+    required this.amount,
+    required this.description,
+    required this.transactionDate,
+    required this.createdAt,
+  });
 }

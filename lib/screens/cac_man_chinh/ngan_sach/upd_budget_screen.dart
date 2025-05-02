@@ -12,18 +12,42 @@ class UpdBudgetScreen extends StatefulWidget {
 
 class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
   // Danh sách Budgets giả lập
-  List<Budget> _budgets = [
-    Budget(1, 1, 1, 5000000, 10, 2023, 1696118400000), // Ăn uống
-    Budget(2, 1, 2, 3000000, 10, 2023, 1696118400000), // Mua sắm
-    Budget(3, 1, 3, 2000000, 10, 2023, 1696118400000), // Di chuyển
-  ];
+  final List<Budget> _budgets  = [
+  Budget(
+    id: 1,
+    userId: 1,
+    categoryId: 1,
+    amount: 5000000,
+    month: 10,
+    year: 2023,
+    createdAt: DateTime(2023, 10, 1).millisecondsSinceEpoch,
+  ),
+  Budget(
+    id: 2,
+    userId: 1,
+    categoryId: 2,
+    amount: 3000000,
+    month: 10,
+    year: 2023,
+    createdAt: DateTime(2023, 10, 1).millisecondsSinceEpoch,
+  ),
+  Budget(
+    id: 3,
+    userId: 1,
+    categoryId: 3,
+    amount: 2000000,
+    month: 10,
+    year: 2023,
+    createdAt: DateTime(2023, 10, 1).millisecondsSinceEpoch,
+  ),
+];
+
 
   // Danh sách category giả lập để hiển thị tên danh mục
   final Map<int, String> _categories = {
-    1: 'Ăn uống',
-    2: 'Mua sắm',
-    3: 'Di chuyển',
-    4: 'Giải trí',
+    1: 'Food',
+    2: 'Rental',
+    3: 'Shopping',
   };
 
   // Biến để lưu trạng thái chỉnh sửa
@@ -60,10 +84,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
   // Hàm cập nhật Budget
   void _updateBudget(Budget budget, double newAmount, int newMonth, int newYear, int newCategoryId) {
     setState(() {
-      budget.amount = newAmount;
-      budget.month = newMonth;
-      budget.year = newYear;
-      budget.category_id = newCategoryId;
+     
       _editingBudget = null; // Đóng form chỉnh sửa sau khi cập nhật
     });
     ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +97,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
     TextEditingController amountController = TextEditingController(text: budget.amount.toString());
     TextEditingController monthController = TextEditingController(text: budget.month.toString());
     TextEditingController yearController = TextEditingController(text: budget.year.toString());
-    int? selectedCategoryId = budget.category_id;
+    int? selectedCategoryId = budget.categoryId;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -152,7 +173,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  _deleteBudget(budget.id);
+                  _deleteBudget(budget.id!);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
@@ -170,7 +191,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
   // Hàm tạo một item trong ListView
   Widget _createItem(Budget budget) {
     bool isEditing = _editingBudget == budget;
-    DateTime createdAt = DateTime.fromMillisecondsSinceEpoch(budget.created_at);
+    DateTime createdAt = DateTime.fromMillisecondsSinceEpoch(budget.createdAt);
 
     return Card(
       elevation: 2,
@@ -178,7 +199,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen> {
         children: [
           ListTile(
             title: Text(
-              'Danh mục: ${_categories[budget.category_id] ?? 'Không xác định'}',
+              'Danh mục: ${_categories[budget.categoryId] ?? 'Không xác định'}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(

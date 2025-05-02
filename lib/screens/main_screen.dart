@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'main_wiget/home_screen.dart';
-import 'main_wiget/transaction_screen.dart';
-import 'main_wiget/budget_screen.dart';
-import 'main_wiget/profile_screens.dart';
+import 'cac_man_chinh/home_screen.dart';
+import 'cac_man_chinh/transaction_screen.dart';
+import 'cac_man_chinh/budget_screen.dart';
+import 'cac_man_chinh/profile_screens.dart';
 
 class MainManagerScreen extends StatefulWidget {
   const MainManagerScreen({super.key});

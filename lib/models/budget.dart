@@ -1,11 +1,29 @@
+import 'package:floor/floor.dart';
+
+@Entity(tableName: 'budgets')
 class Budget {
-  int id;
-  int user_id;
-  int category_id;
-  double amount;
-  int month;
-  int year;
-  int created_at;
-  
-  Budget(this.id, this.user_id, this.category_id, this.amount, this.month, this.year, this.created_at);
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final int userId;
+
+  final int categoryId;
+
+  final double amount;
+
+  final int month;
+
+  final int year;
+
+  final int createdAt;
+
+  Budget({
+    this.id,
+    required this.userId,
+    required this.categoryId,
+    required this.amount,
+    required this.month,
+    required this.year,
+    required this.createdAt,
+  });
 }

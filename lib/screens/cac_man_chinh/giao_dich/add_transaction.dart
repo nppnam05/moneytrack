@@ -12,12 +12,8 @@ class AddTransaction extends StatefulWidget {
 }
 
 class _AddTransactionState extends State<AddTransaction> {
-  // Giả lập danh sách danh mục 
-  final Map<int, String> _categories = {
-    1: 'Food',
-    2: 'Shopping',
-    3: 'Rental',
-  };
+  // Giả lập danh sách danh mục
+  final Map<int, String> _categories = {1: 'Food', 2: 'Shopping', 3: 'Rental'};
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
@@ -57,15 +53,22 @@ class _AddTransactionState extends State<AddTransaction> {
       return;
     }
 
-    final newTransaction = Transaction(0, 1, _selectedCategoryId!,_selectedType!,double.parse(_amountController.text),_descriptionController.text,
-     _selectedDate!.millisecondsSinceEpoch, // transaction_date
-      DateTime.now().millisecondsSinceEpoch, // created_at
+    final newTransaction = TransactionModel (
+      id: 0,
+      userId: 1,
+      categoryId: _selectedCategoryId!,
+      type: _selectedType!,
+      amount: double.parse(_amountController.text),
+      description: _descriptionController.text,
+      transactionDate:
+      _selectedDate!.millisecondsSinceEpoch, // transaction_date
+      createdAt: DateTime.now().millisecondsSinceEpoch, // created_at
     );
 
     // Hiển thị thông báo thành công và quay lại
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Thêm giao dịch thành công!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Thêm giao dịch thành công!')));
   }
 
   @override
@@ -74,10 +77,7 @@ class _AddTransactionState extends State<AddTransaction> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveTransaction,
-          ),
+          IconButton(icon: const Icon(Icons.save), onPressed: _saveTransaction),
         ],
       ),
       body: SingleChildScrollView(
@@ -92,12 +92,13 @@ class _AddTransactionState extends State<AddTransaction> {
                 border: OutlineInputBorder(),
               ),
               value: _selectedCategoryId,
-              items: _categories.entries.map((entry) {
-                return DropdownMenuItem<int>(
-                  value: entry.key,
-                  child: Text(entry.value),
-                );
-              }).toList(),
+              items:
+                  _categories.entries.map((entry) {
+                    return DropdownMenuItem<int>(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    );
+                  }).toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedCategoryId = value;
@@ -113,12 +114,13 @@ class _AddTransactionState extends State<AddTransaction> {
                 border: OutlineInputBorder(),
               ),
               value: _selectedType,
-              items: _types.map((type) {
-                return DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(type),
-                );
-              }).toList(),
+              items:
+                  _types.map((type) {
+                    return DropdownMenuItem<String>(
+                      value: type,
+                      child: Text(type),
+                    );
+                  }).toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedType = value;

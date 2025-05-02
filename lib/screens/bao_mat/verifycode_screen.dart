@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'reset_password_screen.dart';
+import '../../utils/email_otp.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
   const VerifyCodeScreen({super.key, required this.title});
@@ -13,6 +14,7 @@ class VerifyCodeScreen extends StatefulWidget {
 class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   final TextEditingController _codeController = TextEditingController();
   var layLaiMatKhau = ResetPasswordScreen();
+  var email_otp = EmailService();
 
   @override
   Widget build(BuildContext context) {
@@ -45,26 +47,26 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     );
   }
 
-  
-  void _verifyCode() {
+  void _verifyCode() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Vui lòng nhập mã xác nhận')));
-    } else {
-      // TODO: Xử lý xác thực mã tại đây
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Mã $code đã được xác nhận')));
+      return;
+    }
 
-
-
-      // nếu mã đúng thì nó sẽ qua màn lấy lại mật khẩu
+    bool isValid = await email_otp.verifyOTP(code);
+    if (isValid) {
+      // nếu mã đúng thì qua màn hình lấy lại mật khẩu
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => layLaiMatKhau),
       );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Mã xác nhận không đúng')));
     }
   }
 }

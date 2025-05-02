@@ -1,9 +1,26 @@
+import 'package:floor/floor.dart';
+
+@Entity(tableName: 'users')
 class User {
-  int id;
-  String name;
-  String email;
-  String password;
-  double total_expenditure;
-  double total_revenue;
-  User(this.id, this.name, this.email, this.password, this.total_expenditure, this.total_revenue);
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
+  final String name;
+
+  final String email;
+
+  final String password;
+
+  final double totalExpenditure;
+
+  final double totalRevenue;
+
+  User({
+    this.id,
+    required this.name,
+    required this.email,
+    required this.password,
+    required this.totalExpenditure,
+    required this.totalRevenue,
+  });
 }
