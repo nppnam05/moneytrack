@@ -12,13 +12,11 @@ class AddTransaction extends StatefulWidget {
 }
 
 class _AddTransactionState extends State<AddTransaction> {
-  // Giả lập danh sách danh mục (trong thực tế, bạn có thể lấy từ SQLite hoặc Provider)
+  // Giả lập danh sách danh mục 
   final Map<int, String> _categories = {
-    1: 'Ăn uống',
-    2: 'Mua sắm',
-    3: 'Di chuyển',
-    4: 'Giải trí',
-    5: 'Thu nhập',
+    1: 'Food',
+    2: 'Shopping',
+    3: 'Rental',
   };
 
   // Danh sách loại giao dịch
@@ -59,32 +57,15 @@ class _AddTransactionState extends State<AddTransaction> {
       return;
     }
 
-    final newTransaction = Transaction(
-      0, // ID sẽ được tạo tự động bởi SQLite
-      1, // user_id giả lập là 1
-      _selectedCategoryId!,
-      _selectedType!.toLowerCase() == 'thu' ? 'income' : 'expense',
-      double.parse(_amountController.text),
-      _descriptionController.text,
-      _selectedDate!.millisecondsSinceEpoch, // transaction_date
+    final newTransaction = Transaction(0, 1, _selectedCategoryId!,_selectedType!,double.parse(_amountController.text),_descriptionController.text,
+     _selectedDate!.millisecondsSinceEpoch, // transaction_date
       DateTime.now().millisecondsSinceEpoch, // created_at
     );
-
-    // In thông tin giao dịch (trong thực tế, bạn sẽ lưu vào SQLite)
-    print('New Transaction: id=${newTransaction.id}, '
-        'user_id=${newTransaction.user_id}, '
-        'category_id=${newTransaction.category_id}, '
-        'type=${newTransaction.type}, '
-        'amount=${newTransaction.amount}, '
-        'description=${newTransaction.description}, '
-        'transaction_date=${newTransaction.transaction_date}, '
-        'created_at=${newTransaction.created_at}');
 
     // Hiển thị thông báo thành công và quay lại
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Thêm giao dịch thành công!')),
     );
-    Navigator.pop(context);
   }
 
   @override
@@ -122,8 +103,6 @@ class _AddTransactionState extends State<AddTransaction> {
                   _selectedCategoryId = value;
                 });
               },
-              validator: (value) =>
-                  value == null ? 'Vui lòng chọn danh mục' : null,
             ),
             const SizedBox(height: 16),
 
@@ -145,8 +124,6 @@ class _AddTransactionState extends State<AddTransaction> {
                   _selectedType = value;
                 });
               },
-              validator: (value) =>
-                  value == null ? 'Vui lòng chọn loại giao dịch' : null,
             ),
             const SizedBox(height: 16),
 
@@ -190,12 +167,5 @@ class _AddTransactionState extends State<AddTransaction> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/category.dart';
 import 'package:moneytrack/models/user.dart';
 import '../../models/budget.dart';
-
+import '../chi_tieu_pie_chart.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
   final String title;
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Category(9, "Utilities", 80),
   ];
 
-   final List<Budget> budgets = [
+  final List<Budget> budgets = [
     Budget(1, 1, 1, 5000000, 5, 2025, 1696118400000),
     Budget(2, 1, 2, 3000000, 5, 2025, 1696118400000),
     Budget(3, 1, 3, 2000000, 5, 2025, 1696118400000),
@@ -48,11 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _tienMat(),
             const SizedBox(height: 10),
-            _totalIncome(), // tổng thu nhập
+            _tongThuChi(), // tổng thu, chi
             const SizedBox(height: 10),
-            _totalExpense(), // tổng chi tiêu
+            _radioThoiGian(),
             const SizedBox(height: 10),
-             _radioThoiGian(),
+            ChiTieuPieChart(categories: categories),
             const SizedBox(height: 10),
             Text(
               'Chi tiêu nhiều nhất',
@@ -69,12 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
               'Danh sách ngân sách',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-             _budgetList(), // danh sách ngân sách
+            _budgetList(), // danh sách ngân sách
           ],
         ),
       ),
     );
   }
+
   // Hàm hiển thị danh sách ngân sách
   Widget _budgetList() {
     return ListView.builder(
@@ -83,52 +84,45 @@ class _HomeScreenState extends State<HomeScreen> {
       itemCount: budgets.length,
       itemBuilder: (context, index) {
         final budget = budgets[index];
-        return ListTile(
-          title: Text('${budget.amount.toStringAsFixed(0)} VNĐ'),
-        );
+        return ListTile(title: Text('${budget.amount.toStringAsFixed(0)} VNĐ'));
       },
     );
   }
 
-  // Hàm tính và hiển thị tổng chi tiêu
-  Widget _totalExpense() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Tổng chi tiêu',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${user.total_expenditure.toStringAsFixed(2)} VNĐ',
-              style: const TextStyle(fontSize: 16, color: Colors.red),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Hàm tính và hiển thị tổng thu nhập
-  Widget _totalIncome() {
+  Widget _tongThuChi() {
     return Card(
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            const Text(
-              'Tổng thu nhập',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Tổng thu nhập:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${user.total_revenue.toStringAsFixed(0)} VNĐ',
+                  style: TextStyle(color: Colors.green),
+                ),
+              ],
             ),
-            Text(
-              '${user.total_revenue.toStringAsFixed(2)} VNĐ',
-              style: const TextStyle(fontSize: 16, color: Colors.green),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Tổng chi tiêu:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${user.total_expenditure.toStringAsFixed(0)} VNĐ',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
             ),
           ],
         ),

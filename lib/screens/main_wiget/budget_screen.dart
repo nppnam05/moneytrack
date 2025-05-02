@@ -17,20 +17,13 @@ class _BudgetScreenState extends State<BudgetScreen> with SingleTickerProviderSt
     UpdBudgetScreen(title: "Xóa và sửa ngân sách"),
     AddBudgetScreen(title: "Thêm ngân sách"),
   ];
+  
   @override
   void initState() {
     super.initState();
     // Khởi tạo TabController với số lượng tab bằng độ dài của _screens
     _tabController = TabController(length: _screens.length, vsync: this);
   }
-
-  @override
-  void dispose() {
-    // Giải phóng TabController để tránh rò rỉ bộ nhớ
-    _tabController.dispose();
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
