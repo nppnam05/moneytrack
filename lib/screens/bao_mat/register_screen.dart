@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/models/user.dart';
+import 'package:moneytrack/services/database_api.dart';
+
 class RegisterScreen extends StatefulWidget {
   RegisterScreen({super.key, required this.title});
 
@@ -9,6 +12,10 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  var nameController = TextEditingController();
+  var emailController = TextEditingController();
+  var passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,9 +37,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: TextStyle(color: Colors.grey),
             ),
             SizedBox(height: 20),
-            Text('HOẶC', style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 20),
             TextField(
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Họ tên',
                 border: UnderlineInputBorder(),
@@ -40,6 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 10),
             TextField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 border: UnderlineInputBorder(),
@@ -47,6 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             SizedBox(height: 10),
             TextField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Mật khẩu',
@@ -58,20 +66,75 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ElevatedButton(
               onPressed: () {
                 // logic đăng ký
+                _dangKy();
 
-
-                Navigator.pop(context);
               },
               child: Text('ĐĂNG KÝ'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _dangKy() async {
+    String name = nameController.text.trim();
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if(name.isEmpty || email.isEmpty || password.isEmpty){
+       ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Bạn chưa nhập đầy đủ thông tin')));
+      return;
+    }
+
+    List<User> users = await DatabaseApi.getAllUsers();
+
+    bool checkEmail = users.any((it) => it.email == email);
+    bool checkUser = users.any((it) => it.name == name && it.password == password);
+    if (checkEmail) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Email đã tồn tại')));
+      return;
+    } else if (checkUser) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password hoặc UserName đã tồn tại')),
+      );
+      return;
+    }
+
+    User newUser = User(
+      id: 0,
+      name: name,
+      email: email,
+      password: password,
+      totalExpenditure: 0.0,
+      totalRevenue: 0.0,
+    );
+
+    DatabaseApi.insertUser(
+    newUser,
+     onSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng ký thành công')),
+        );
+        
+        Navigator.pop(context); // Quay lại màn hình trước
+      },
+      onError: (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng ký thất bại: $e')),
+        );
+      },
     );
   }
 }

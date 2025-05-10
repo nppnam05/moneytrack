@@ -3,24 +3,29 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'users')
 class User {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+   int id;
 
-  final String name;
+   String name;
 
-  final String email;
+   String email;
 
-  final String password;
+   String password;
 
-  final double totalExpenditure;
+   double totalExpenditure;
 
-  final double totalRevenue;
+   double totalRevenue;
 
   User({
-    this.id,
+    required this.id,
     required this.name,
     required this.email,
     required this.password,
     required this.totalExpenditure,
     required this.totalRevenue,
   });
+  
+  @override
+  String toString() {
+    return "$id - $name - $email - $password - $totalExpenditure - $totalRevenue";
+  }
 }

@@ -3,22 +3,22 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'budgets')
 class Budget {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+   int id;
 
-  final int userId;
+   int userId;
 
-  final int categoryId;
+   int categoryId;
 
-  final double amount;
+   double amount;
 
-  final int month;
+   int month;
 
-  final int year;
+   int year;
 
-  final int createdAt;
+   int createdAt;
 
   Budget({
-    this.id,
+    required this.id,
     required this.userId,
     required this.categoryId,
     required this.amount,
@@ -26,4 +26,9 @@ class Budget {
     required this.year,
     required this.createdAt,
   });
+
+  @override
+  String toString() {
+    return "$id - $userId - $categoryId - $amount - $month - $year - $createdAt";
+  }
 }

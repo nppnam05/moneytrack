@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/screens/main_screen.dart';
 import 'screens/screens.dart';
+import 'services/database_api.dart';
 
 
-void main() {
+void main() async  {
+  WidgetsFlutterBinding.ensureInitialized();// thiết cho init async, await một Future trước khi chạy ứng dụng
+  await DatabaseApi.init();// tạo kết nối với Database ngay từ lúc ban đầu
   runApp(const MyApp());
 }
 

@@ -3,24 +3,29 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'reminders')
 class Reminder {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+   int id;
 
-  final int userId;
+   int userId;
 
-  final String title;
+   String title;
 
-  final String message;
+   String message;
 
-  final int remindAt;
+   int remindAt;
 
-  final int createdAt;
+   int createdAt;
 
   Reminder({
-    this.id,
+    required this.id,
     required this.userId,
     required this.title,
     required this.message,
     required this.remindAt,
     required this.createdAt,
   });
+
+  @override
+  String toString() {
+    return "$id - $userId - $title - $message - $remindAt - $createdAt";
+  }
 }

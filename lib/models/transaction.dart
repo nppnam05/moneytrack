@@ -3,24 +3,24 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'transactions')
 class TransactionModel {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+   int id;
 
-  final int userId;
+   int userId;
 
-  final int categoryId;
+   int categoryId;
 
-  final String type;
+   String type;
 
-  final double amount;
+   double amount;
 
-  final String description;
+   String description;
 
-  final int transactionDate;
+   int transactionDate;
 
-  final int createdAt;
+   int createdAt;
 
   TransactionModel({
-    this.id,
+    required this.id,
     required this.userId,
     required this.categoryId,
     required this.type,
@@ -29,4 +29,9 @@ class TransactionModel {
     required this.transactionDate,
     required this.createdAt,
   });
+
+  @override
+  String toString() {
+    return "$id - $userId - $categoryId - $type - $amount - $description - $transactionDate - $createdAt";
+  }
 }

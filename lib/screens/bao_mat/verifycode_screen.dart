@@ -3,9 +3,10 @@ import 'reset_password_screen.dart';
 import '../../utils/email_otp.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
-  const VerifyCodeScreen({super.key, required this.title});
+  const VerifyCodeScreen({super.key, required this.title, required this.userID});
 
   final String title;
+  final int userID;
 
   @override
   State<VerifyCodeScreen> createState() => _VerifyCodeScreenState();
@@ -13,7 +14,6 @@ class VerifyCodeScreen extends StatefulWidget {
 
 class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   final TextEditingController _codeController = TextEditingController();
-  var layLaiMatKhau = ResetPasswordScreen();
   var email_otp = EmailService();
 
   @override
@@ -61,12 +61,13 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       // nếu mã đúng thì qua màn hình lấy lại mật khẩu
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => layLaiMatKhau),
+        MaterialPageRoute(builder: (context) => ResetPasswordScreen(userID: widget.userID)),
       );
     } else {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Mã xác nhận không đúng')));
     }
+    _codeController.clear();
   }
 }

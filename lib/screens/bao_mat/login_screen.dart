@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/screens/screens.dart';
+import 'package:moneytrack/services/database_api.dart';
+import 'package:collection/collection.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({super.key, required this.title});
@@ -11,11 +14,30 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  late FocusNode forcus;
+
+  static int userid = -1;
   var dangKy = RegisterScreen(title: "Đăng ký");
   var quenMatKhau = ForgotPasswordScreen(title: "Quên mật khẩu");
 
   var emailControllor = TextEditingController();
-  var passControllor = TextEditingController();
+  var passwordControllor = TextEditingController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    forcus = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    forcus.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(height: 20),
             TextField(
               controller: emailControllor,
+              focusNode: forcus,
               decoration: InputDecoration(
                 labelText: 'Email',
                 border: UnderlineInputBorder(),
@@ -46,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             SizedBox(height: 10),
             TextField(
-              controller: passControllor,
+              controller: passwordControllor,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Mật khẩu',
@@ -69,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: () {
         // logic kiểm tra
 
-        Navigator.pushReplacementNamed(context, '/main_manager');
+        _kiemTraUser();
       },
       child: Text('ĐĂNG NHẬP'),
       style: ElevatedButton.styleFrom(
@@ -106,5 +129,34 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _kiemTraUser() async {
+    String email = emailControllor.text.trim();
+    String password = passwordControllor.text.trim();
+    emailControllor.clear();
+    passwordControllor.clear();
+
+    if(email.isEmpty || password.isEmpty){
+       ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Bạn chưa nhập đầy đủ thông tin')));
+      return;
+    }
+
+    List<User> users = await DatabaseApi.getAllUsers();
+
+    User? user = users.firstWhereOrNull((it) => it.email == email && it.password == password);
+
+    if(user != null){
+      userid = user.id;
+      Navigator.pushReplacementNamed(context, '/main_manager');
+    }
+    else{
+       ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Tài khoản không tồn tại ')));
+      return;
+    }
   }
 }

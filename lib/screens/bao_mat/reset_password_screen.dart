@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:moneytrack/services/database_api.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  const ResetPasswordScreen({super.key, required this.userID});
+  final int userID;
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -12,7 +13,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Đặt lại mật khẩu')),
@@ -23,17 +24,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             TextField(
               controller: newPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Mật khẩu mới',
-              ),
+              decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: confirmPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Xác nhận mật khẩu',
-              ),
+              decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu'),
             ),
             const SizedBox(height: 32),
             ElevatedButton(
@@ -46,8 +43,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-
-  void _resetPassword() {
+  Future<void> _resetPassword() async {
     final newPassword = newPasswordController.text;
     final confirmPassword = confirmPasswordController.text;
 
@@ -59,17 +55,27 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     }
 
     if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mật khẩu không khớp')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Mật khẩu không khớp')));
       return;
     }
 
     // Xử lý đổi mật khẩu ở đây
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đặt lại mật khẩu thành công')),
+    var user = await DatabaseApi.getUserById(widget.userID);
+    user?.password = newPassword;
+    DatabaseApi.updateUser(
+      user!,
+      onSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đặt lại mật khẩu thành công')),
+        );
+        // quay lại màn đăng nhập
+        Navigator.pop(context);
+      },
+      onError: (error) {
+        print("$error");
+      },
     );
-    // quay lại màn đăng nhập
-    Navigator.pop(context);
   }
 }

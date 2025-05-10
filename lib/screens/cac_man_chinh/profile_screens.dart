@@ -63,7 +63,7 @@ class _ProfileScreensState extends State<ProfileScreens> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/login', arguments: {'animation': 'fade'});
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
               },
               child: Text('Đăng xuất'),
               style: ElevatedButton.styleFrom(
