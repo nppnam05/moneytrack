@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
+import 'package:moneytrack/services/database_api.dart';
 
 class AddTransaction extends StatefulWidget {
   const AddTransaction({super.key, required this.title});
@@ -12,8 +14,8 @@ class AddTransaction extends StatefulWidget {
 }
 
 class _AddTransactionState extends State<AddTransaction> {
-  // Giả lập danh sách danh mục
-  final Map<int, String> _categories = {1: 'Food', 2: 'Shopping', 3: 'Rental'};
+  // Danh sách danh mục
+  List<Categories> _categories = [];
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
@@ -24,6 +26,13 @@ class _AddTransactionState extends State<AddTransaction> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+  
 
   // Hàm chọn ngày
   Future<void> _selectDate(BuildContext context) async {
@@ -93,10 +102,10 @@ class _AddTransactionState extends State<AddTransaction> {
               ),
               value: _selectedCategoryId,
               items:
-                  _categories.entries.map((entry) {
+                  _categories.map((entry) {
                     return DropdownMenuItem<int>(
-                      value: entry.key,
-                      child: Text(entry.value),
+                      value: entry.id,
+                      child: Text(entry.name),
                     );
                   }).toList(),
               onChanged: (value) {
@@ -169,5 +178,12 @@ class _AddTransactionState extends State<AddTransaction> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadCategories() async {
+  final categoriesFromDb = await DatabaseApi.getAllCategories();
+  setState(() {
+    _categories = categoriesFromDb;
+  });
   }
 }

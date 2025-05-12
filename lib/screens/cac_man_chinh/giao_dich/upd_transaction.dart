@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
+import 'package:moneytrack/services/database_api.dart';
 
 class UpdTransaction extends StatefulWidget {
   const UpdTransaction({super.key, required this.title});
@@ -12,53 +14,20 @@ class UpdTransaction extends StatefulWidget {
 }
 
 class _UpdTransactionState extends State<UpdTransaction> {
-  // Giả lập danh sách giao dịch (trong thực tế, bạn có thể lấy từ SQLite)
-  final List<TransactionModel > _transactions = [
-  TransactionModel (
-    id: 1,
-    userId: 1,
-    categoryId: 1,
-    type: 'Chi',
-    amount: 200000,
-    description: 'Mua đồ ăn',
-    transactionDate: DateTime(2025, 5, 1).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-  TransactionModel (
-    id: 2,
-    userId: 1,
-    categoryId: 2,
-    type: 'Chi',
-    amount: 1000000,
-    description: 'Mua quần áo',
-    transactionDate: DateTime(2025, 5, 2).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-  TransactionModel (
-    id: 3,
-    userId: 1,
-    categoryId: 3,
-    type: 'Thu',
-    amount: 5000000,
-    description: 'Lương tháng',
-    transactionDate: DateTime(2025, 5, 3).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-];
-
-
-  // Danh sách danh mục (giả lập)
-  final Map<int, String> _categories = {
-    1: 'Food',
-    2: 'Shopping',
-    3: 'Rental',
-  };
+  List<TransactionModel > _transactions = [];
+  List<Categories> _categories = [];
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
 
   // Biến để lưu trạng thái chỉnh sửa
   TransactionModel ? _editingTransaction;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
     @override
   Widget build(BuildContext context) {
@@ -131,10 +100,10 @@ class _UpdTransactionState extends State<UpdTransaction> {
               border: OutlineInputBorder(),
             ),
             value: selectedCategoryId,
-            items: _categories.entries.map((entry) {
+            items: _categories.map((entry) {
               return DropdownMenuItem<int>(
-                value: entry.key,
-                child: Text(entry.value),
+                value: entry.id,
+                child: Text(entry.name),
               );
             }).toList(),
             onChanged: (value) {
@@ -263,6 +232,15 @@ class _UpdTransactionState extends State<UpdTransaction> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadData() async {
+  final categoriesFromDb = await DatabaseApi.getAllCategories();
+  final transactionFromDb = await DatabaseApi.getAllTransactions();
+  setState(() {
+    _categories = categoriesFromDb;
+    _transactions = transactionFromDb;
+  });
   }
 
 }

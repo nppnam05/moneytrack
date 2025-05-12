@@ -56,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Categories(id: 4, name: "Giải trí", cost: 150),
       Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
     ];
+
     // array.forEach((it) =>
     // DatabaseApi.insertCategory(it, onSuccess: (){}, onError: (Error){})
     // );
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
+    transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
 
     List<Budget> budgets = [
       Budget(
