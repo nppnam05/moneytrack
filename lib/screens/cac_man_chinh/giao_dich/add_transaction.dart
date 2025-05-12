@@ -84,57 +84,27 @@ class _AddTransactionState extends State<AddTransaction> {
   await DatabaseApi.insertTransaction(
     newTransaction,
     onSuccess: () async {
-      try {
-        List<Wallet> wallets = await DatabaseApi.getWalletsByUserId(0);
-        if (wallets.isNotEmpty) {
-          Wallet wallet = wallets.first;
-
-          if (_selectedType == 'Thu') {
-            wallet.balance += amount;
-          } else if (_selectedType == 'Chi') {
-            wallet.balance -= amount;
-          }
-
-          await DatabaseApi.updateWallet(
-            wallet,
-            onSuccess: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Thêm giao dịch và cập nhật ví thành công!')),
-              );
-              // Xoá các trường dữ liệu sau khi thêm thành công
-              setState(() {
-                _selectedCategoryId = null;
-                _selectedType = null;
-                _amountController.clear();
-                _descriptionController.clear();
-                _selectedDate = null;
-              });
-            },
-            onError: (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Lỗi cập nhật ví: $e')),
-              );
-            },
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Không tìm thấy ví!')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi xử lý ví: $e')),
-        );
-      }
       await UserUtils.syncUserRevenueAndExpenditure(0);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Thêm giao dịch thành công!')),
+      );
+
+      setState(() {
+        _selectedCategoryId = null;
+        _selectedType = null;
+        _amountController.clear();
+        _descriptionController.clear();
+        _selectedDate = null;
+      });
     },
     onError: (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi khi thêm giao dịch: $e')),
       );
     },
-  );
-  }
+  );  
+}
 
   
   @override

@@ -14,7 +14,7 @@ class UpdTransaction extends StatefulWidget {
   _UpdTransactionState createState() => _UpdTransactionState();
 }
 
-class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObserver {
+class _UpdTransactionState extends State<UpdTransaction>{
   List<TransactionModel > _transactions = [];
   List<Categories> _categories = [];
 
@@ -27,22 +27,10 @@ class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObse
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _loadData();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -202,11 +190,10 @@ class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObse
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  // Cập nhật giao dịch
-                  final updatedTransaction = TransactionModel (
+                  final updatedTransaction = TransactionModel(
                     id: transaction.id,
                     userId: transaction.userId,
-                    categoryId: selectedCategoryId!,
+                    categoryId: selectedCategoryId,
                     type: selectedType,
                     amount: double.parse(amountController.text),
                     description: descriptionController.text,
@@ -214,11 +201,12 @@ class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObse
                     createdAt: transaction.createdAt,
                   );
 
+                  // Chức năng cập nhật
                   await DatabaseApi.updateTransaction(
                     updatedTransaction,
                     onSuccess: () async {
+                      await _loadData();
                       setState(() {
-                        _transactions[_transactions.indexWhere((t) => t.id == updatedTransaction.id)] = updatedTransaction;
                         _editingTransaction = null;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -228,35 +216,38 @@ class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObse
                     },
                     onError: (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Lỗi cập nhật: $e')),
+                        SnackBar(content: Text('Lỗi cập nhật giao dịch: $e')),
                       );
                     },
-                  ); 
+                  );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                child: const Text('Sửa'),
+                child: const Text('Cập nhật'),
               ),
+
               ElevatedButton(
                 onPressed: () async {
-                  
+                  // chức năng xoá
                   await DatabaseApi.deleteTransaction(
                     transaction,
-                    onSuccess: () {
+                    onSuccess: () async {
                       setState(() {
                         _transactions.remove(transaction);
                         _editingTransaction = null;
                       });
+
+                      await UserUtils.syncUserRevenueAndExpenditure(transaction.userId);
+
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Xóa giao dịch thành công!')),
+                        const SnackBar(content: Text('Xoá giao dịch thành công!')),
                       );
                     },
                     onError: (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Lỗi xóa giao dịch: $e')),
+                        SnackBar(content: Text('Lỗi xoá giao dịch: $e')),
                       );
                     },
                   );
-                  await UserUtils.syncUserRevenueAndExpenditure(0);
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text('Xóa'),
