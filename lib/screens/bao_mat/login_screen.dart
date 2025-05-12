@@ -66,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     List<TransactionModel> transactions = [
       TransactionModel(
-       
         userId: 0,
         categoryId: 0, // "Ăn uống"
         type: "Chi",
@@ -76,7 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 1, // "Tiền thuê nhà"
         type: "Chi",
@@ -86,7 +84,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 2, // "Mua sắm"
         type: "Chi",
@@ -96,7 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 3, // "Di chuyển"
         type: "Chi",
@@ -106,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-       
         userId: 0,
         categoryId: 4, // "Giải trí"
         type: "Chi",
@@ -115,11 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
         transactionDate: 1623675623000,
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
-    ];
-
-    var temp = [
       TransactionModel(
-      
         userId: 0,
         categoryId: 0, // "Ăn uống"
         type: "Chi",
@@ -129,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: mondayLastWeekMillis,
       ),
       TransactionModel(
-       
         userId: 0,
         categoryId: 1, // "Tiền thuê nhà"
         type: "Chi",
@@ -139,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: mondayLastWeekMillis,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 2, // "Mua sắm"
         type: "Chi",
@@ -149,7 +138,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: mondayLastWeekMillis,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 3, // "Di chuyển"
         type: "Chi",
@@ -159,7 +147,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: mondayLastWeekMillis,
       ),
       TransactionModel(
-        
         userId: 0,
         categoryId: 4, // "Giải trí"
         type: "Chi",
@@ -170,9 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    temp.forEach((it) =>  DatabaseApi.insertTransaction(it, onSuccess: (){
-      print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa $it");
-    }, onError: (Error){}));
     // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
 
     List<Budget> budgets = [

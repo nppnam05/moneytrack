@@ -28,6 +28,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   List<Categories> categoriesNganSach = [];
 
   List<Budget> budgets = [];
+  double _tongThu = 0;
+  double _tongChi = 0;
 
   @override
   void initState() {
@@ -60,9 +62,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           children: [
             _tienMat(),
             const SizedBox(height: 10),
-            _tongThuChi(), // tổng thu, chi
-            const SizedBox(height: 10),
             _radioThoiGian(),
+            const SizedBox(height: 10),
+            _tongThuChi(), // tổng thu, chi
             const SizedBox(height: 10),
             ChiTieuPieChart(categories: listCategory),
             const SizedBox(height: 10),
@@ -104,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${formatCurrency(user?.totalRevenue ?? 0)} VNĐ',
+                  '${formatCurrency(_tongThu)} VNĐ',
                   style: TextStyle(color: Colors.green),
                 ),
               ],
@@ -118,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${formatCurrency(user?.totalExpenditure ?? 0)} VNĐ',
+                  '${formatCurrency(_tongChi)} VNĐ',
                   style: TextStyle(color: Colors.red),
                 ),
               ],
@@ -261,7 +263,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         child: Icon(icon, color: Colors.white),
       ),
       title: Text(category.name),
-      trailing: Text('${formatCurrency(category.cost)} VND', style: TextStyle(fontSize: 13),),
+      trailing: Text(
+        '${formatCurrency(category.cost)} VND',
+        style: TextStyle(fontSize: 13),
+      ),
     );
   }
 
@@ -307,6 +312,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             transaction.where((it) => isThisWeek(it.createdAt)).toList();
       }
 
+      _tongThu = listTransaction
+          .where((it) => it.type == "Thu")
+          .fold(0.0, (sum, item) => sum + item.amount);
+      _tongChi = listTransaction
+          .where((it) => it.type == "Chi")
+          .fold(0.0, (sum, item) => sum + item.amount);
+
       listTransaction.forEach((it) {
         listCategory[it.categoryId].cost += it.amount;
       });
@@ -318,57 +330,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final now = DateTime.now();
       budgets =
           resultBudgets
-              .where(
-                (it) =>
-                    it.month >= now.month &&
-                    it.month < now.month + 1 &&
-                    it.year >= now.year &&
-                    it.year < now.year + 1,
-              )
+              .where((it) => it.month == now.month && it.year == now.year)
               .toList();
-    
-      budgets.forEach((it) {
+
+      for (var it in budgets) {
         categoriesNganSach[it.categoryId].cost += it.amount;
-      });
-  
+      }
     });
   }
 
-  // định dạng tiền 
+  // định dạng tiền
   String formatCurrency(double amount) {
-  final parts = amount.toStringAsFixed(2).split('.'); 
-  final wholePart = parts[0];
-  final decimalPart = parts[1];
+    final parts = amount.toStringAsFixed(2).split('.');
+    final wholePart = parts[0];
+    final decimalPart = parts[1];
 
-  final buffer = StringBuffer();
-  int count = 0;
+    final buffer = StringBuffer();
+    int count = 0;
 
-  for (int i = wholePart.length - 1; i >= 0; i--) {
-    buffer.write(wholePart[i]);
-    count++;
-    if (count % 3 == 0 && i != 0) {
-      buffer.write('.');
+    for (int i = wholePart.length - 1; i >= 0; --i) {
+      buffer.write(wholePart[i]);
+      count++;
+      if (count % 3 == 0 && i != 0) {
+        buffer.write('.');
+      }
     }
+
+    final formattedWhole = buffer.toString().split('').reversed.join();
+    return '$formattedWhole,$decimalPart';
   }
-
-  final formattedWhole = buffer.toString().split('').reversed.join();
-  return '$formattedWhole,$decimalPart'; 
-}
-
-
 
   bool isThisWeek(int timestamp) {
     final now = DateTime.now();
 
     // Tính ngày đầu tuần (Thứ Hai)
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final start = DateTime(
-      startOfWeek.year,
-      startOfWeek.month,
-      startOfWeek.day,
-    );
+    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
 
-    // Ngày cuối tuần (Chủ Nhật, 23:59:59.999)
+    // Ngày cuối tuần 
     final end = start
         .add(const Duration(days: 7))
         .subtract(const Duration(milliseconds: 1));
@@ -377,7 +376,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     return !date.isBefore(start) && !date.isAfter(end);
   }
-
 
   bool isThisMonth(int timestamp) {
     final now = DateTime.now();
