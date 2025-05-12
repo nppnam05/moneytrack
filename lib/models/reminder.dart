@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'reminders')
 class Reminder {
   @PrimaryKey(autoGenerate: true)
-   int id;
+   int? id;
 
    int userId;
 
@@ -16,7 +16,7 @@ class Reminder {
    int createdAt;
 
   Reminder({
-    required this.id,
+    this.id,
     required this.userId,
     required this.title,
     required this.message,

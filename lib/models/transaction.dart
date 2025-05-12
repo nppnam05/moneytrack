@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'transactions')
 class TransactionModel {
   @PrimaryKey(autoGenerate: true)
-   int id;
+   int? id;
 
    int userId;
 
@@ -20,7 +20,7 @@ class TransactionModel {
    int createdAt;
 
   TransactionModel({
-    required this.id,
+    this.id,
     required this.userId,
     required this.categoryId,
     required this.type,

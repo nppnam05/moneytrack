@@ -3,14 +3,14 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'categories')
 class Categories {
   @PrimaryKey(autoGenerate: true)
-   int id;
+   int? id;
 
    String name;
 
    double cost;
 
   Categories({
-    required this.id,
+    this.id,
     required this.name,
     required this.cost,
   });

@@ -213,7 +213,7 @@ class _$UserDao extends UserDao {
   Future<List<User>> getAllUsers() async {
     return _queryAdapter.queryList('SELECT * FROM users',
         mapper: (Map<String, Object?> row) => User(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             name: row['name'] as String,
             email: row['email'] as String,
             password: row['password'] as String,
@@ -225,7 +225,7 @@ class _$UserDao extends UserDao {
   Future<User?> getUserById(int id) async {
     return _queryAdapter.query('SELECT * FROM users WHERE id = ?1',
         mapper: (Map<String, Object?> row) => User(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             name: row['name'] as String,
             email: row['email'] as String,
             password: row['password'] as String,
@@ -298,7 +298,7 @@ class _$WalletDao extends WalletDao {
   Future<List<Wallet>> getAllWallets() async {
     return _queryAdapter.queryList('SELECT * FROM wallets',
         mapper: (Map<String, Object?> row) => Wallet(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             balance: row['balance'] as double));
   }
@@ -307,7 +307,7 @@ class _$WalletDao extends WalletDao {
   Future<Wallet?> getWalletById(int id) async {
     return _queryAdapter.query('SELECT * FROM wallets WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Wallet(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             balance: row['balance'] as double),
         arguments: [id]);
@@ -317,7 +317,7 @@ class _$WalletDao extends WalletDao {
   Future<List<Wallet>> getWalletsByUserId(int userId) async {
     return _queryAdapter.queryList('SELECT * FROM wallets WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => Wallet(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             balance: row['balance'] as double),
         arguments: [userId]);
@@ -402,7 +402,7 @@ class _$TransactionDao extends TransactionDao {
   Future<List<TransactionModel>> getAllTransactions() async {
     return _queryAdapter.queryList('SELECT * FROM transactions',
         mapper: (Map<String, Object?> row) => TransactionModel(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             type: row['type'] as String,
@@ -416,7 +416,7 @@ class _$TransactionDao extends TransactionDao {
   Future<TransactionModel?> getTransactionById(int id) async {
     return _queryAdapter.query('SELECT * FROM transactions WHERE id = ?1',
         mapper: (Map<String, Object?> row) => TransactionModel(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             type: row['type'] as String,
@@ -432,7 +432,7 @@ class _$TransactionDao extends TransactionDao {
     return _queryAdapter.queryList(
         'SELECT * FROM transactions WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => TransactionModel(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             type: row['type'] as String,
@@ -518,7 +518,7 @@ class _$ReminderDao extends ReminderDao {
   Future<List<Reminder>> getAllReminders() async {
     return _queryAdapter.queryList('SELECT * FROM reminders',
         mapper: (Map<String, Object?> row) => Reminder(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             title: row['title'] as String,
             message: row['message'] as String,
@@ -530,7 +530,7 @@ class _$ReminderDao extends ReminderDao {
   Future<Reminder?> getReminderById(int id) async {
     return _queryAdapter.query('SELECT * FROM reminders WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Reminder(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             title: row['title'] as String,
             message: row['message'] as String,
@@ -543,7 +543,7 @@ class _$ReminderDao extends ReminderDao {
   Future<List<Reminder>> getRemindersByUserId(int userId) async {
     return _queryAdapter.queryList('SELECT * FROM reminders WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => Reminder(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             title: row['title'] as String,
             message: row['message'] as String,
@@ -573,7 +573,7 @@ class _$CategoryDao extends CategoryDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _categoryInsertionAdapter = InsertionAdapter(
+        _categoriesInsertionAdapter = InsertionAdapter(
             database,
             'categories',
             (Categories item) => <String, Object?>{
@@ -581,7 +581,7 @@ class _$CategoryDao extends CategoryDao {
                   'name': item.name,
                   'cost': item.cost
                 }),
-        _categoryUpdateAdapter = UpdateAdapter(
+        _categoriesUpdateAdapter = UpdateAdapter(
             database,
             'categories',
             ['id'],
@@ -590,7 +590,7 @@ class _$CategoryDao extends CategoryDao {
                   'name': item.name,
                   'cost': item.cost
                 }),
-        _categoryDeletionAdapter = DeletionAdapter(
+        _categoriesDeletionAdapter = DeletionAdapter(
             database,
             'categories',
             ['id'],
@@ -606,17 +606,17 @@ class _$CategoryDao extends CategoryDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Categories> _categoryInsertionAdapter;
+  final InsertionAdapter<Categories> _categoriesInsertionAdapter;
 
-  final UpdateAdapter<Categories> _categoryUpdateAdapter;
+  final UpdateAdapter<Categories> _categoriesUpdateAdapter;
 
-  final DeletionAdapter<Categories> _categoryDeletionAdapter;
+  final DeletionAdapter<Categories> _categoriesDeletionAdapter;
 
   @override
   Future<List<Categories>> getAllCategories() async {
     return _queryAdapter.queryList('SELECT * FROM categories',
         mapper: (Map<String, Object?> row) => Categories(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             name: row['name'] as String,
             cost: row['cost'] as double));
   }
@@ -625,7 +625,7 @@ class _$CategoryDao extends CategoryDao {
   Future<Categories?> getCategoryById(int id) async {
     return _queryAdapter.query('SELECT * FROM categories WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Categories(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             name: row['name'] as String,
             cost: row['cost'] as double),
         arguments: [id]);
@@ -633,17 +633,18 @@ class _$CategoryDao extends CategoryDao {
 
   @override
   Future<void> insertCategory(Categories category) async {
-    await _categoryInsertionAdapter.insert(category, OnConflictStrategy.abort);
+    await _categoriesInsertionAdapter.insert(
+        category, OnConflictStrategy.abort);
   }
 
   @override
   Future<void> updateCategory(Categories category) async {
-    await _categoryUpdateAdapter.update(category, OnConflictStrategy.abort);
+    await _categoriesUpdateAdapter.update(category, OnConflictStrategy.abort);
   }
 
   @override
   Future<void> deleteCategory(Categories category) async {
-    await _categoryDeletionAdapter.delete(category);
+    await _categoriesDeletionAdapter.delete(category);
   }
 }
 
@@ -707,7 +708,7 @@ class _$BudgetDao extends BudgetDao {
   Future<List<Budget>> getAllBudgets() async {
     return _queryAdapter.queryList('SELECT * FROM budgets',
         mapper: (Map<String, Object?> row) => Budget(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,
@@ -720,7 +721,7 @@ class _$BudgetDao extends BudgetDao {
   Future<Budget?> getBudgetById(int id) async {
     return _queryAdapter.query('SELECT * FROM budgets WHERE id = ?1',
         mapper: (Map<String, Object?> row) => Budget(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,
@@ -734,7 +735,7 @@ class _$BudgetDao extends BudgetDao {
   Future<List<Budget>> getBudgetsByUserId(int userId) async {
     return _queryAdapter.queryList('SELECT * FROM budgets WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => Budget(
-            id: row['id'] as int,
+            id: row['id'] as int?,
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,

@@ -73,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ).showSnackBar(SnackBar(content: Text('email không tồn tại')));
         return false;
       }
-      userid = checkUser.id;
+      userid = checkUser.id!;
       return true;
     }
 

@@ -21,10 +21,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   final balanceController = TextEditingController(text: '0 đ');
   User? user = null;
+
+  List<Categories> categories = [];
   List<Categories> listCategory = [];
   List<Categories> listCategoryMax = [];
-
-  double totalCost = 0;
+  List<Categories> categoriesNganSach = [];
 
   List<Budget> budgets = [];
 
@@ -74,29 +75,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               'Các khoản chi tiêu khác',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(listCategory),
+            _itemListChiTieu(categories),
             const SizedBox(height: 10),
             const Text(
-              'Danh sách ngân sách',
+              'Danh sách ngân sách tháng này',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _budgetList(), // danh sách ngân sách
+            _itemListChiTieu(categoriesNganSach), // danh sách ngân sách
           ],
         ),
       ),
-    );
-  }
-
-  // Hàm hiển thị danh sách ngân sách
-  Widget _budgetList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: budgets.length,
-      itemBuilder: (context, index) {
-        final budget = budgets[index];
-        return ListTile(title: Text('${budget.amount.toStringAsFixed(0)} VNĐ'));
-      },
     );
   }
 
@@ -116,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user?.totalRevenue.toStringAsFixed(0)} VNĐ',
+                  '${formatCurrency(user?.totalRevenue ?? 0)} VNĐ',
                   style: TextStyle(color: Colors.green),
                 ),
               ],
@@ -130,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user?.totalExpenditure.toStringAsFixed(0)} VNĐ',
+                  '${formatCurrency(user?.totalExpenditure ?? 0)} VNĐ',
                   style: TextStyle(color: Colors.red),
                 ),
               ],
@@ -152,8 +140,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             value: TimeRange.week,
             groupValue: _selectedTime,
             onChanged: (value) {
-             _selectedTime = value!;
-             _loadData();
+              _selectedTime = value!;
+              _loadData();
             },
           ),
           RadioListTile<TimeRange>(
@@ -161,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             value: TimeRange.month,
             groupValue: _selectedTime,
             onChanged: (value) {
-             _selectedTime = value!;
-             _loadData();
+              _selectedTime = value!;
+              _loadData();
             },
           ),
         ],
@@ -223,8 +211,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       itemBuilder: (context, index) {
         final categoryStatic = Category[index];
 
-        if(categoryStatic.cost != 0){
+        if (categoryStatic.cost != 0) {
           return _createItemChiTieu(categoryStatic);
+        } else {
+          return SizedBox();
         }
       },
     );
@@ -271,9 +261,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         child: Icon(icon, color: Colors.white),
       ),
       title: Text(category.name),
-      trailing: Text( 
-        '${(category.cost).toStringAsFixed(2)} VND' 
-      ),
+      trailing: Text('${formatCurrency(category.cost)} VND', style: TextStyle(fontSize: 13),),
     );
   }
 
@@ -285,11 +273,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     var transaction = await DatabaseApi.getTransactionsByUserId(0);
     var resultBudgets = await DatabaseApi.getBudgetsByUserId(0);
-   
 
     setState(() {
       user = resultUser;
-      balanceController.text = "${resultWallet[0].balance} VND";
+      balanceController.text = "${formatCurrency(resultWallet[0].balance)} VND";
 
       listCategory = [
         Categories(id: 0, name: "Ăn uống", cost: 0),
@@ -300,48 +287,101 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         Categories(id: 5, name: "Hóa đơn tiện ích", cost: 0),
       ];
 
+      categoriesNganSach = [
+        Categories(id: 0, name: "Ăn uống", cost: 0),
+        Categories(id: 1, name: "Tiền thuê nhà", cost: 0),
+        Categories(id: 2, name: "Mua sắm", cost: 0),
+        Categories(id: 3, name: "Di chuyển", cost: 0),
+        Categories(id: 4, name: "Giải trí", cost: 0),
+        Categories(id: 5, name: "Hóa đơn tiện ích", cost: 0),
+      ];
+
       var listTransaction;
-      totalCost = 0;
       budgets.clear();
 
-      if(_selectedTime == TimeRange.month){
-        listTransaction = transaction.where((it) => isThisMonth(it.createdAt)).toList();
-      }
-      else{
-        listTransaction = transaction.where((it) => isThisWeek(it.createdAt)).toList();
+      if (_selectedTime == TimeRange.month) {
+        listTransaction =
+            transaction.where((it) => isThisMonth(it.createdAt)).toList();
+      } else {
+        listTransaction =
+            transaction.where((it) => isThisWeek(it.createdAt)).toList();
       }
 
       listTransaction.forEach((it) {
         listCategory[it.categoryId].cost += it.amount;
-        totalCost += it.amount;
       });
 
       listCategory.sort((a, b) => b.cost.compareTo(a.cost));
       listCategoryMax = listCategory.take(3).toList();
+      categories = listCategory.sublist(3);
 
-      budgets.addAll(resultBudgets);
+      final now = DateTime.now();
+      budgets =
+          resultBudgets
+              .where(
+                (it) =>
+                    it.month >= now.month &&
+                    it.month < now.month + 1 &&
+                    it.year >= now.year &&
+                    it.year < now.year + 1,
+              )
+              .toList();
+    
+      budgets.forEach((it) {
+        categoriesNganSach[it.categoryId].cost += it.amount;
+      });
+  
     });
   }
 
- bool isThisWeek(int timestamp) {
-  final now = DateTime.now();
+  // định dạng tiền 
+  String formatCurrency(double amount) {
+  final parts = amount.toStringAsFixed(2).split('.'); 
+  final wholePart = parts[0];
+  final decimalPart = parts[1];
 
-  final startOfWeek = DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  final endOfWeek = startOfWeek.add(const Duration(days: 7)).subtract(const Duration(milliseconds: 1));
+  final buffer = StringBuffer();
+  int count = 0;
 
-  final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return date.isAfter(startOfWeek) && date.isBefore(endOfWeek);
+  for (int i = wholePart.length - 1; i >= 0; i--) {
+    buffer.write(wholePart[i]);
+    count++;
+    if (count % 3 == 0 && i != 0) {
+      buffer.write('.');
+    }
+  }
+
+  final formattedWhole = buffer.toString().split('').reversed.join();
+  return '$formattedWhole,$decimalPart'; 
 }
+
+
+
+  bool isThisWeek(int timestamp) {
+    final now = DateTime.now();
+
+    // Tính ngày đầu tuần (Thứ Hai)
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final start = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    );
+
+    // Ngày cuối tuần (Chủ Nhật, 23:59:59.999)
+    final end = start
+        .add(const Duration(days: 7))
+        .subtract(const Duration(milliseconds: 1));
+
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    return !date.isBefore(start) && !date.isAfter(end);
+  }
 
 
   bool isThisMonth(int timestamp) {
-  final now = DateTime.now();
-
-  final startOfMonth = DateTime(now.year, now.month, 1);
-  final endOfMonth = DateTime(now.year, now.month + 1, 1).subtract(const Duration(milliseconds: 1));
-
-  final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return date.isAfter(startOfMonth) && date.isBefore(endOfMonth);
-}
-
+    final now = DateTime.now();
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return date.month == now.month && date.year == now.year;
+  }
 }
