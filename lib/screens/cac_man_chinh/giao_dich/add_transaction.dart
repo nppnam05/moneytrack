@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
+import 'package:moneytrack/models/user.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/load_total_cost.dart';
 
 class AddTransaction extends StatefulWidget {
   const AddTransaction({super.key, required this.title});
@@ -16,6 +19,8 @@ class AddTransaction extends StatefulWidget {
 class _AddTransactionState extends State<AddTransaction> {
   // Danh sách danh mục
   List<Categories> _categories = [];
+  List<TransactionModel> _transactionModel = [];
+  var _user;
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
@@ -28,7 +33,7 @@ class _AddTransactionState extends State<AddTransaction> {
   DateTime? _selectedDate;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _loadCategories();
   }
@@ -50,36 +55,88 @@ class _AddTransactionState extends State<AddTransaction> {
   }
 
   // Hàm lưu giao dịch
-  void _saveTransaction() {
-    if (_selectedCategoryId == null ||
-        _selectedType == null ||
-        _amountController.text.isEmpty ||
-        _descriptionController.text.isEmpty ||
-        _selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
-      );
-      return;
-    }
-
-    final newTransaction = TransactionModel (
-      id: 0,
-      userId: 1,
-      categoryId: _selectedCategoryId!,
-      type: _selectedType!,
-      amount: double.parse(_amountController.text),
-      description: _descriptionController.text,
-      transactionDate:
-      _selectedDate!.millisecondsSinceEpoch, // transaction_date
-      createdAt: DateTime.now().millisecondsSinceEpoch, // created_at
+  void _saveTransaction() async {
+  if (_selectedCategoryId == null ||
+      _selectedType == null ||
+      _amountController.text.isEmpty ||
+      _descriptionController.text.isEmpty ||
+      _selectedDate == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
     );
-
-    // Hiển thị thông báo thành công và quay lại
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Thêm giao dịch thành công!')));
+    return;
   }
 
+  final double amount = double.parse(_amountController.text);
+
+  final newTransaction = TransactionModel(
+    userId: 0,
+    categoryId: _selectedCategoryId!,
+    type: _selectedType!,
+    amount: amount,
+    description: _descriptionController.text,
+    transactionDate: _selectedDate!.millisecondsSinceEpoch,
+    createdAt: DateTime.now().millisecondsSinceEpoch,
+  );
+
+
+  // Thêm giao dịch
+  await DatabaseApi.insertTransaction(
+    newTransaction,
+    onSuccess: () async {
+      try {
+        List<Wallet> wallets = await DatabaseApi.getWalletsByUserId(0);
+        if (wallets.isNotEmpty) {
+          Wallet wallet = wallets.first;
+
+          if (_selectedType == 'Thu') {
+            wallet.balance += amount;
+          } else if (_selectedType == 'Chi') {
+            wallet.balance -= amount;
+          }
+
+          await DatabaseApi.updateWallet(
+            wallet,
+            onSuccess: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Thêm giao dịch và cập nhật ví thành công!')),
+              );
+              // Xoá các trường dữ liệu sau khi thêm thành công
+              setState(() {
+                _selectedCategoryId = null;
+                _selectedType = null;
+                _amountController.clear();
+                _descriptionController.clear();
+                _selectedDate = null;
+              });
+            },
+            onError: (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Lỗi cập nhật ví: $e')),
+              );
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Không tìm thấy ví!')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi xử lý ví: $e')),
+        );
+      }
+      await UserUtils.syncUserRevenueAndExpenditure(0);
+    },
+    onError: (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi thêm giao dịch: $e')),
+      );
+    },
+  );
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,8 +239,13 @@ class _AddTransactionState extends State<AddTransaction> {
 
   Future<void> _loadCategories() async {
   final categoriesFromDb = await DatabaseApi.getAllCategories();
+  final userFromDb = await DatabaseApi.getUserById(0);
+  final transactionFromDb = await DatabaseApi.getTransactionsByUserId(0);
+
   setState(() {
     _categories = categoriesFromDb;
+    _user = userFromDb;
+    _transactionModel = transactionFromDb;
   });
   }
 }

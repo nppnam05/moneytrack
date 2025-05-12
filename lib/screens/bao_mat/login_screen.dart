@@ -61,9 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
     // DatabaseApi.insertCategory(it, onSuccess: (){}, onError: (Error){})
     // );
 
+    DateTime now = DateTime.now();
+    DateTime mondayLastWeek = now.subtract(Duration(days: now.weekday + 6));
+    int mondayLastWeekMillis = mondayLastWeek.millisecondsSinceEpoch;
+
     List<TransactionModel> transactions = [
       TransactionModel(
-        id: 0,
+       
         userId: 0,
         categoryId: 0, // "Ăn uống"
         type: "Chi",
@@ -73,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        id: 1,
+        
         userId: 0,
         categoryId: 1, // "Tiền thuê nhà"
         type: "Chi",
@@ -83,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        id: 2,
+        
         userId: 0,
         categoryId: 2, // "Mua sắm"
         type: "Chi",
@@ -93,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        id: 3,
+        
         userId: 0,
         categoryId: 3, // "Di chuyển"
         type: "Chi",
@@ -103,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
-        id: 4,
+       
         userId: 0,
         categoryId: 4, // "Giải trí"
         type: "Chi",
@@ -114,11 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
-
     List<Budget> budgets = [
       Budget(
-        id: 0,
+        
         userId: 0,
         categoryId: 1,
         amount: 5000000,
@@ -127,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       Budget(
-        id: 1,
+       
         userId: 0,
         categoryId: 2,
         amount: 3000000,
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       Budget(
-        id: 2,
+        
         userId: 0,
         categoryId: 3,
         amount: 2000000,
@@ -147,7 +149,6 @@ class _LoginScreenState extends State<LoginScreen> {
     ];
 
     // budgets.forEach((it) => DatabaseApi.insertBudget(it, onSuccess: (){}, onError: (Error){}));
-    
   }
 
   @override
@@ -262,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (user != null) {
-      LoginScreen.userid = user.id;
+      LoginScreen.userid = user.id!;
       Navigator.pushReplacementNamed(context, '/main_manager');
     } else {
       ScaffoldMessenger.of(

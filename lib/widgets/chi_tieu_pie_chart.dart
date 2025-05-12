@@ -53,8 +53,8 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
       final category = widget.categories[index];
       final isTouched = index == touchedIndex;
       double percent = total == 0 ? 0 : (category.cost / total) * 100;
-      final color = _getColorForCategory(category.id);
-      final icon = _getIconForCategory(category.id);
+      final color = _getColorForCategory(category.id!);
+      final icon = _getIconForCategory(category.id!);
 
       return PieChartSectionData(
         color: color,

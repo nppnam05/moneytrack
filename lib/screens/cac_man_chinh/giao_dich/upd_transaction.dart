@@ -3,6 +3,7 @@ import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/load_total_cost.dart';
 
 class UpdTransaction extends StatefulWidget {
   const UpdTransaction({super.key, required this.title});
@@ -13,7 +14,7 @@ class UpdTransaction extends StatefulWidget {
   _UpdTransactionState createState() => _UpdTransactionState();
 }
 
-class _UpdTransactionState extends State<UpdTransaction> {
+class _UpdTransactionState extends State<UpdTransaction> with WidgetsBindingObserver {
   List<TransactionModel > _transactions = [];
   List<Categories> _categories = [];
 
@@ -26,10 +27,22 @@ class _UpdTransactionState extends State<UpdTransaction> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
   }
 
-    @override
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _loadData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -188,7 +201,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Cập nhật giao dịch
                   final updatedTransaction = TransactionModel (
                     id: transaction.id,
@@ -201,28 +214,49 @@ class _UpdTransactionState extends State<UpdTransaction> {
                     createdAt: transaction.createdAt,
                   );
 
-                  setState(() {
-                    _transactions[_transactions.indexOf(transaction)] = updatedTransaction;
-                    _editingTransaction = null;
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cập nhật giao dịch thành công!')),
-                  );
+                  await DatabaseApi.updateTransaction(
+                    updatedTransaction,
+                    onSuccess: () async {
+                      setState(() {
+                        _transactions[_transactions.indexWhere((t) => t.id == updatedTransaction.id)] = updatedTransaction;
+                        _editingTransaction = null;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cập nhật giao dịch thành công!')),
+                      );
+                      await UserUtils.syncUserRevenueAndExpenditure(updatedTransaction.userId);
+                    },
+                    onError: (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lỗi cập nhật: $e')),
+                      );
+                    },
+                  ); 
                 },
-                child: const Text('Cập nhật'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                child: const Text('Sửa'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // Xóa giao dịch
-                  setState(() {
-                    _transactions.remove(transaction);
-                    _editingTransaction = null;
-                  });
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Xóa giao dịch thành công!')),
+                onPressed: () async {
+                  
+                  await DatabaseApi.deleteTransaction(
+                    transaction,
+                    onSuccess: () {
+                      setState(() {
+                        _transactions.remove(transaction);
+                        _editingTransaction = null;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Xóa giao dịch thành công!')),
+                      );
+                    },
+                    onError: (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lỗi xóa giao dịch: $e')),
+                      );
+                    },
                   );
+                  await UserUtils.syncUserRevenueAndExpenditure(0);
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                 child: const Text('Xóa'),

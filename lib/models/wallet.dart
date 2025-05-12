@@ -3,14 +3,14 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'wallets')
 class Wallet {
   @PrimaryKey(autoGenerate: true)
-   int id;
+   int? id;
 
    int userId;
 
    double balance;
 
   Wallet({
-    required this.id,
+    this.id,
     required this.userId,
     required this.balance,
   });

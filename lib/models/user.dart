@@ -3,7 +3,7 @@ import 'package:floor/floor.dart';
 @Entity(tableName: 'users')
 class User {
   @PrimaryKey(autoGenerate: true)
-   int id;
+   int? id;
 
    String name;
 
@@ -16,7 +16,7 @@ class User {
    double totalRevenue;
 
   User({
-    required this.id,
+    this.id,
     required this.name,
     required this.email,
     required this.password,
