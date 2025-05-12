@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
   LoginScreen({super.key, required this.title});
 
   final String title;
-  static int userid = -1;
+  static int userid = 0;
 
   @override
   _LoginScreenState createState() => _LoginScreenState();

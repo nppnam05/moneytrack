@@ -273,11 +273,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _loadData() async {
     int userID = LoginScreen.userid;
 
-    var resultUser = await DatabaseApi.getUserById(0);
-    var resultWallet = await DatabaseApi.getWalletsByUserId(0);
+    var resultUser = await DatabaseApi.getUserById(userID);
+    var resultWallet = await DatabaseApi.getWalletsByUserId(userID);
 
-    var transaction = await DatabaseApi.getTransactionsByUserId(0);
-    var resultBudgets = await DatabaseApi.getBudgetsByUserId(0);
+    var transaction = await DatabaseApi.getTransactionsByUserId(userID);
+    var resultBudgets = await DatabaseApi.getBudgetsByUserId(userID);
 
     setState(() {
       user = resultUser;
@@ -357,6 +357,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     final formattedWhole = buffer.toString().split('').reversed.join();
+    if(decimalPart == "00"){
+      return formattedWhole;
+    }
     return '$formattedWhole,$decimalPart';
   }
 
