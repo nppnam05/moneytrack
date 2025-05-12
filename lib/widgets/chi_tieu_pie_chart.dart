@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:moneytrack/models/category.dart';
+import 'package:moneytrack/models/categories.dart';
 
 class ChiTieuPieChart extends StatefulWidget {
-  final List<Category> categories;
+  final List<Categories> categories;
 
   const ChiTieuPieChart({Key? key, required this.categories}) : super(key: key);
 
@@ -53,8 +53,8 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
       final category = widget.categories[index];
       final isTouched = index == touchedIndex;
       double percent = total == 0 ? 0 : (category.cost / total) * 100;
-      final color = _getColorForCategory(category.name);
-      final icon = _getIconForCategory(category.name);
+      final color = _getColorForCategory(category.id);
+      final icon = _getIconForCategory(category.id);
 
       return PieChartSectionData(
         color: color,
@@ -88,38 +88,38 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
     );
   }
 
-  Color _getColorForCategory(String name) {
-    switch (name.toLowerCase()) {
-      case 'food':
+  Color _getColorForCategory(int id) {
+    switch (id) {
+      case 0:
         return Colors.pinkAccent;
-      case 'rental':
+      case 1:
         return Colors.orangeAccent;
-      case 'shopping':
+      case 2:
         return Colors.blueGrey;
-      case 'transport':
+      case 3:
         return Colors.teal;
-      case 'entertainment':
+      case 4:
         return Colors.purple;
-      case 'utilities':
+      case 5:
         return Colors.green;
       default:
         return Colors.grey;
     }
   }
 
-  IconData _getIconForCategory(String name) {
-    switch (name.toLowerCase()) {
-      case 'food':
+  IconData _getIconForCategory(int id) {
+    switch (id) {
+      case 0:
         return Icons.fastfood;
-      case 'rental':
+      case 1:
         return Icons.home;
-      case 'shopping':
+      case 2:
         return Icons.shopping_bag;
-      case 'transport':
+      case 3:
         return Icons.directions_car;
-      case 'entertainment':
+      case 4:
         return Icons.movie;
-      case 'utilities':
+      case 5:
         return Icons.lightbulb;
       default:
         return Icons.category;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:moneytrack/models/category.dart';
+import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/user.dart';
+import 'package:moneytrack/screens/bao_mat/login_screen.dart';
+import 'package:moneytrack/services/database_api.dart';
 import '../../models/budget.dart';
 import '../../widgets/chi_tieu_pie_chart.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
   final String title;
@@ -13,29 +16,37 @@ class HomeScreen extends StatefulWidget {
 
 enum TimeRange { week, month }
 
-class _HomeScreenState extends State<HomeScreen> {
-  TimeRange _selectedRange = TimeRange.week;
-  final costController = TextEditingController(text: '0 đ');
-  var user = User(id: 1,name: "aaaa",email: "aaa",password: "a",totalExpenditure: 1000000000,totalRevenue: 100000000000);
-  List<Category> categories = [
-    Category(id: 1,name:  "Food",cost:  1000),
-    Category(id:  2,name:  "Rental",cost:  100),
-    Category(id:  3,name:  "Shopping",cost:  50),
-  ];
-  List<Category> array = [
-    Category(id: 4,name:  "Food",cost:  1000),
-    Category(id: 5,name:  "Rental",cost:  10),
-    Category(id: 6,name: "Shopping",cost: 50),
-    Category(id: 7,name: "Transport",cost: 200),
-    Category(id: 8,name: "Entertainment",cost: 150),
-    Category(id: 9,name: "Utilities",cost: 80),
-  ];
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  TimeRange _selectedTime = TimeRange.week;
 
-  final List<Budget> budgets = [
-    Budget(id: 1,userId: 1 ,categoryId: 1,amount: 5000000,month:  5,year:  2025,createdAt: 1696118400000),
-    Budget(id:2,userId: 1 ,categoryId:  2,amount: 3000000,month:  5,year: 2025,createdAt: 1696118400000),
-    Budget(id:3,userId: 1 ,categoryId: 3,amount: 2000000,month:  5,year:  2025,createdAt:  1696118400000),
-  ];
+  final balanceController = TextEditingController(text: '0 đ');
+  User? user = null;
+  List<Categories> listCategory = [];
+  List<Categories> listCategoryMax = [];
+
+  double totalCost = 0;
+
+  List<Budget> budgets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // gọi dữ liệu lần đầu
+    _loadData();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Gọi hàm cập nhật dữ liệu
+    _loadData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,18 +63,18 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 10),
             _radioThoiGian(),
             const SizedBox(height: 10),
-            ChiTieuPieChart(categories: categories),
+            ChiTieuPieChart(categories: listCategory),
             const SizedBox(height: 10),
             Text(
               'Chi tiêu nhiều nhất',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(categories),
+            _itemListChiTieu(listCategoryMax),
             Text(
               'Các khoản chi tiêu khác',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(array),
+            _itemListChiTieu(listCategory),
             const SizedBox(height: 10),
             const Text(
               'Danh sách ngân sách',
@@ -105,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user.totalRevenue.toStringAsFixed(0)} VNĐ',
+                  '${user?.totalRevenue.toStringAsFixed(0)} VNĐ',
                   style: TextStyle(color: Colors.green),
                 ),
               ],
@@ -119,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${user.totalExpenditure.toStringAsFixed(0)} VNĐ',
+                  '${user?.totalExpenditure.toStringAsFixed(0)} VNĐ',
                   style: TextStyle(color: Colors.red),
                 ),
               ],
@@ -139,21 +150,19 @@ class _HomeScreenState extends State<HomeScreen> {
           RadioListTile<TimeRange>(
             title: const Text('Tuần'),
             value: TimeRange.week,
-            groupValue: _selectedRange,
+            groupValue: _selectedTime,
             onChanged: (value) {
-              setState(() {
-                _selectedRange = value!;
-              });
+             _selectedTime = value!;
+             _loadData();
             },
           ),
           RadioListTile<TimeRange>(
             title: const Text('Tháng'),
             value: TimeRange.month,
-            groupValue: _selectedRange,
+            groupValue: _selectedTime,
             onChanged: (value) {
-              setState(() {
-                _selectedRange = value!;
-              });
+             _selectedTime = value!;
+             _loadData();
             },
           ),
         ],
@@ -191,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 4),
                 TextField(
-                  controller: costController,
+                  controller: balanceController,
                   readOnly: true,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(fontSize: 24, color: Colors.green),
@@ -206,47 +215,133 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Danh sách chi tiêu
-  Widget _itemListChiTieu(List<Category> Category) {
+  Widget _itemListChiTieu(List<Categories> Category) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: Category.length,
       itemBuilder: (context, index) {
         final categoryStatic = Category[index];
-        return _createItem(categoryStatic);
+
+        if(categoryStatic.cost != 0){
+          return _createItemChiTieu(categoryStatic);
+        }
       },
     );
   }
 
-  Widget _createItem(Category category) {
+  Widget _createItemChiTieu(Categories category) {
     IconData icon;
     Color color;
 
-    // Gán icon và màu dựa theo tên danh mục
-    switch (category.name.toLowerCase()) {
-      case 'food':
+    // Gán icon và màu dựa theo danh mục
+    switch (category.id) {
+      case 0:
         icon = Icons.fastfood;
         color = Colors.pinkAccent;
         break;
-      case 'rental':
+      case 1:
         icon = Icons.home;
         color = Colors.orangeAccent;
         break;
-      case 'shopping':
+      case 2:
         icon = Icons.shopping_bag;
         color = Colors.blueGrey;
+        break;
+      case 3:
+        icon = Icons.directions_car;
+        color = Colors.teal;
+        break;
+      case 4:
+        icon = Icons.movie;
+        color = Colors.purple;
+        break;
+      case 5:
+        icon = Icons.lightbulb;
+        color = Colors.green;
         break;
       default:
         icon = Icons.category;
         color = Colors.grey;
     }
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: color,
         child: Icon(icon, color: Colors.white),
       ),
       title: Text(category.name),
-      trailing: Text('${(category.cost / 1150.0).toStringAsFixed(2)}%'),
+      trailing: Text( 
+        '${(category.cost).toStringAsFixed(2)} VND' 
+      ),
     );
   }
+
+  Future<void> _loadData() async {
+    int userID = LoginScreen.userid;
+
+    var resultUser = await DatabaseApi.getUserById(0);
+    var resultWallet = await DatabaseApi.getWalletsByUserId(0);
+
+    var transaction = await DatabaseApi.getTransactionsByUserId(0);
+    var resultBudgets = await DatabaseApi.getBudgetsByUserId(0);
+   
+
+    setState(() {
+      user = resultUser;
+      balanceController.text = "${resultWallet[0].balance} VND";
+
+      listCategory = [
+        Categories(id: 0, name: "Ăn uống", cost: 0),
+        Categories(id: 1, name: "Tiền thuê nhà", cost: 0),
+        Categories(id: 2, name: "Mua sắm", cost: 0),
+        Categories(id: 3, name: "Di chuyển", cost: 0),
+        Categories(id: 4, name: "Giải trí", cost: 0),
+        Categories(id: 5, name: "Hóa đơn tiện ích", cost: 0),
+      ];
+
+      var listTransaction;
+      totalCost = 0;
+      budgets.clear();
+
+      if(_selectedTime == TimeRange.month){
+        listTransaction = transaction.where((it) => isThisMonth(it.createdAt)).toList();
+      }
+      else{
+        listTransaction = transaction.where((it) => isThisWeek(it.createdAt)).toList();
+      }
+
+      listTransaction.forEach((it) {
+        listCategory[it.categoryId].cost += it.amount;
+        totalCost += it.amount;
+      });
+
+      listCategory.sort((a, b) => b.cost.compareTo(a.cost));
+      listCategoryMax = listCategory.take(3).toList();
+
+      budgets.addAll(resultBudgets);
+    });
+  }
+
+ bool isThisWeek(int timestamp) {
+  final now = DateTime.now();
+
+  final startOfWeek = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+  final endOfWeek = startOfWeek.add(const Duration(days: 7)).subtract(const Duration(milliseconds: 1));
+
+  final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  return date.isAfter(startOfWeek) && date.isBefore(endOfWeek);
+}
+
+
+  bool isThisMonth(int timestamp) {
+  final now = DateTime.now();
+
+  final startOfMonth = DateTime(now.year, now.month, 1);
+  final endOfMonth = DateTime(now.year, now.month + 1, 1).subtract(const Duration(milliseconds: 1));
+
+  final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  return date.isAfter(startOfMonth) && date.isBefore(endOfMonth);
+}
+
 }

@@ -1,20 +1,20 @@
 import 'package:floor/floor.dart';
-import '../models/category.dart';
+import '../models/categories.dart';
 
 @dao
 abstract class CategoryDao {
   @Query('SELECT * FROM categories')
-  Future<List<Category>> getAllCategories();
+  Future<List<Categories>> getAllCategories();
 
   @Query('SELECT * FROM categories WHERE id = :id')
-  Future<Category?> getCategoryById(int id);
+  Future<Categories?> getCategoryById(int id);
 
   @insert
-  Future<void> insertCategory(Category category);
+  Future<void> insertCategory(Categories category);
 
   @update
-  Future<void> updateCategory(Category category);
+  Future<void> updateCategory(Categories category);
 
   @delete
-  Future<void> deleteCategory(Category category);
+  Future<void> deleteCategory(Categories category);
 }

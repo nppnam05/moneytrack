@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moneytrack/models/category.dart';
+import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/budget.dart';
 
 class AddBudgetScreen extends StatefulWidget {
@@ -12,10 +12,10 @@ class AddBudgetScreen extends StatefulWidget {
 }
 
 class _AddBudgetScreenState extends State<AddBudgetScreen> {
-  List<Category> categories = [
-    Category(id: 1,name: "Food",cost: 1000),
-    Category(id: 2,name: "Rental",cost: 100),
-    Category(id: 3,name: "Shopping",cost: 50),
+  List<Categories> categories = [
+    Categories(id: 1,name: "Food",cost: 1000),
+    Categories(id: 2,name: "Rental",cost: 100),
+    Categories(id: 3,name: "Shopping",cost: 50),
   ];
 
   // Controller cho các TextField
@@ -24,7 +24,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   final _yearController = TextEditingController();
 
   // Biến để lưu category được chọn
-  Category? _selectedCategory;
+  Categories? _selectedCategory;
 
   final int _userId = 1;
 
@@ -66,20 +66,20 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dropdown để chọn category
-          DropdownButtonFormField<Category>(
+          DropdownButtonFormField<Categories>(
             decoration: const InputDecoration(
               labelText: 'Danh mục',
               border: OutlineInputBorder(),
             ),
             value: _selectedCategory,
             items:
-                categories.map((Category category) {
-                  return DropdownMenuItem<Category>(
+                categories.map((Categories category) {
+                  return DropdownMenuItem<Categories>(
                     value: category,
                     child: Text(category.name),
                   );
                 }).toList(),
-            onChanged: (Category? newValue) {
+            onChanged: (Categories? newValue) {
               setState(() {
                 _selectedCategory = newValue;
               });

@@ -1,7 +1,7 @@
 import 'package:floor/floor.dart';
 
 @Entity(tableName: 'categories')
-class Category {
+class Categories {
   @PrimaryKey(autoGenerate: true)
    int id;
 
@@ -9,7 +9,7 @@ class Category {
 
    double cost;
 
-  Category({
+  Categories({
     required this.id,
     required this.name,
     required this.cost,

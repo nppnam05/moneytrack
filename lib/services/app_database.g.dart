@@ -576,7 +576,7 @@ class _$CategoryDao extends CategoryDao {
         _categoryInsertionAdapter = InsertionAdapter(
             database,
             'categories',
-            (Category item) => <String, Object?>{
+            (Categories item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
                   'cost': item.cost
@@ -585,7 +585,7 @@ class _$CategoryDao extends CategoryDao {
             database,
             'categories',
             ['id'],
-            (Category item) => <String, Object?>{
+            (Categories item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
                   'cost': item.cost
@@ -594,7 +594,7 @@ class _$CategoryDao extends CategoryDao {
             database,
             'categories',
             ['id'],
-            (Category item) => <String, Object?>{
+            (Categories item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
                   'cost': item.cost
@@ -606,25 +606,25 @@ class _$CategoryDao extends CategoryDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Category> _categoryInsertionAdapter;
+  final InsertionAdapter<Categories> _categoryInsertionAdapter;
 
-  final UpdateAdapter<Category> _categoryUpdateAdapter;
+  final UpdateAdapter<Categories> _categoryUpdateAdapter;
 
-  final DeletionAdapter<Category> _categoryDeletionAdapter;
+  final DeletionAdapter<Categories> _categoryDeletionAdapter;
 
   @override
-  Future<List<Category>> getAllCategories() async {
+  Future<List<Categories>> getAllCategories() async {
     return _queryAdapter.queryList('SELECT * FROM categories',
-        mapper: (Map<String, Object?> row) => Category(
+        mapper: (Map<String, Object?> row) => Categories(
             id: row['id'] as int,
             name: row['name'] as String,
             cost: row['cost'] as double));
   }
 
   @override
-  Future<Category?> getCategoryById(int id) async {
+  Future<Categories?> getCategoryById(int id) async {
     return _queryAdapter.query('SELECT * FROM categories WHERE id = ?1',
-        mapper: (Map<String, Object?> row) => Category(
+        mapper: (Map<String, Object?> row) => Categories(
             id: row['id'] as int,
             name: row['name'] as String,
             cost: row['cost'] as double),
@@ -632,17 +632,17 @@ class _$CategoryDao extends CategoryDao {
   }
 
   @override
-  Future<void> insertCategory(Category category) async {
+  Future<void> insertCategory(Categories category) async {
     await _categoryInsertionAdapter.insert(category, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> updateCategory(Category category) async {
+  Future<void> updateCategory(Categories category) async {
     await _categoryUpdateAdapter.update(category, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteCategory(Category category) async {
+  Future<void> deleteCategory(Categories category) async {
     await _categoryDeletionAdapter.delete(category);
   }
 }

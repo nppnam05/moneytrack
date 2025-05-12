@@ -6,7 +6,7 @@ import '../models/user.dart';
 import '../models/wallet.dart';
 import '../models/transaction.dart';
 import '../models/reminder.dart';
-import '../models/category.dart';
+import '../models/categories.dart';
 import '../models/budget.dart';
 
 import '../dao/user_dao.dart';
@@ -25,7 +25,7 @@ part 'app_database.g.dart';
     Wallet,
     TransactionModel,
     Reminder,
-    Category,
+    Categories,
     Budget,
   ],
 )

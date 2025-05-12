@@ -14,6 +14,7 @@ class MainManagerScreen extends StatefulWidget {
 class _MainManagerScreenState extends State<MainManagerScreen> {
   int _selectedIndex = 0;
 
+
   final List<Widget> _screens = [
     HomeScreen(title: 'Trang chủ'),
     TransactionsScreen(title: 'Sổ giao dịch'),

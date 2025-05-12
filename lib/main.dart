@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/login',
+      initialRoute: '/main_manager',
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
         Widget? page;
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             page = ProfileScreens(title: '...',);
             break;
         }
-
+        
         // nếu màn này có thì sẽ hiện ra
         if (page != null) {
           return MaterialPageRoute(builder: (_) => page!);

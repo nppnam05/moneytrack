@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/screens.dart';
 import 'package:moneytrack/services/database_api.dart';
 import 'package:collection/collection.dart';
+import '../../models/categories.dart';
+import '../../models/transaction.dart';
+import '../../models/budget.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({super.key, required this.title});
 
   final String title;
+  static int userid = -1;
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -16,7 +21,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late FocusNode forcus;
 
-  static int userid = -1;
   var dangKy = RegisterScreen(title: "Đăng ký");
   var quenMatKhau = ForgotPasswordScreen(title: "Quên mật khẩu");
 
@@ -27,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    themData();
 
     forcus = FocusNode();
   }
@@ -37,6 +42,111 @@ class _LoginScreenState extends State<LoginScreen> {
     forcus.dispose();
 
     super.dispose();
+  }
+
+  void themData() {
+    // DatabaseApi.insertUser(User(id: 0, name: "Nam", email: "nppnam05@gmail.com", password: "a", totalExpenditure: 0, totalRevenue: 0), onSuccess: (){}, onError: (Error){});
+    // DatabaseApi.insertWallet(Wallet(id: 0, userId: 0, balance: 1000), onSuccess: (){}, onError: (Error){});
+
+    List<Categories> array = [
+      Categories(id: 0, name: "Ăn uống", cost: 1000),
+      Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
+      Categories(id: 2, name: "Mua sắm", cost: 50),
+      Categories(id: 3, name: "Di chuyển", cost: 200),
+      Categories(id: 4, name: "Giải trí", cost: 150),
+      Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
+    ];
+    // array.forEach((it) =>
+    // DatabaseApi.insertCategory(it, onSuccess: (){}, onError: (Error){})
+    // );
+
+    List<TransactionModel> transactions = [
+      TransactionModel(
+        id: 0,
+        userId: 0,
+        categoryId: 0, // "Ăn uống"
+        type: "Chi",
+        amount: 500.0,
+        description: "Bữa trưa",
+        transactionDate: 1623675623000, // Ví dụ về timestamp
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      TransactionModel(
+        id: 1,
+        userId: 0,
+        categoryId: 1, // "Tiền thuê nhà"
+        type: "Chi",
+        amount: 100.0,
+        description: "Thuê nhà tháng này",
+        transactionDate: 1623675623000,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      TransactionModel(
+        id: 2,
+        userId: 0,
+        categoryId: 2, // "Mua sắm"
+        type: "Chi",
+        amount: 50.0,
+        description: "Mua quần áo",
+        transactionDate: 1623675623000,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      TransactionModel(
+        id: 3,
+        userId: 0,
+        categoryId: 3, // "Di chuyển"
+        type: "Chi",
+        amount: 200.0,
+        description: "Di chuyển bằng taxi",
+        transactionDate: 1623675623000,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      TransactionModel(
+        id: 4,
+        userId: 0,
+        categoryId: 4, // "Giải trí"
+        type: "Chi",
+        amount: 150.0,
+        description: "Đi xem phim",
+        transactionDate: 1623675623000,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    ];
+
+    // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
+
+    List<Budget> budgets = [
+      Budget(
+        id: 0,
+        userId: 0,
+        categoryId: 1,
+        amount: 5000000,
+        month: 5,
+        year: 2025,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      Budget(
+        id: 1,
+        userId: 0,
+        categoryId: 2,
+        amount: 3000000,
+        month: 5,
+        year: 2025,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+      Budget(
+        id: 2,
+        userId: 0,
+        categoryId: 3,
+        amount: 2000000,
+        month: 5,
+        year: 2025,
+        createdAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    ];
+
+    // budgets.forEach((it) => DatabaseApi.insertBudget(it, onSuccess: (){}, onError: (Error){}));
+    
   }
 
   @override
@@ -137,8 +247,8 @@ class _LoginScreenState extends State<LoginScreen> {
     emailControllor.clear();
     passwordControllor.clear();
 
-    if(email.isEmpty || password.isEmpty){
-       ScaffoldMessenger.of(
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Bạn chưa nhập đầy đủ thông tin')));
       return;
@@ -146,14 +256,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     List<User> users = await DatabaseApi.getAllUsers();
 
-    User? user = users.firstWhereOrNull((it) => it.email == email && it.password == password);
+    User? user = users.firstWhereOrNull(
+      (it) => it.email == email && it.password == password,
+    );
 
-    if(user != null){
-      userid = user.id;
+    if (user != null) {
+      LoginScreen.userid = user.id;
       Navigator.pushReplacementNamed(context, '/main_manager');
-    }
-    else{
-       ScaffoldMessenger.of(
+    } else {
+      ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Tài khoản không tồn tại ')));
       return;
