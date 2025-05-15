@@ -306,10 +306,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       if (_selectedTime == TimeRange.month) {
         listTransaction =
-            transaction.where((it) => isThisMonth(it.createdAt)).toList();
+            transaction.where((it) => isThisMonth(it.transactionDate)).toList();
       } else {
         listTransaction =
-            transaction.where((it) => isThisWeek(it.createdAt)).toList();
+            transaction.where((it) => isThisWeek(it.transactionDate)).toList();
       }
 
       _tongThu = listTransaction
@@ -336,6 +336,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       for (var it in budgets) {
         categoriesNganSach[it.categoryId].cost += it.amount;
       }
+      
+      categoriesNganSach.sort((a, b) => b.cost.compareTo(a.cost));
     });
   }
 

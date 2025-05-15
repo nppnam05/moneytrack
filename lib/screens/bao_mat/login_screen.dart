@@ -13,6 +13,8 @@ class LoginScreen extends StatefulWidget {
 
   final String title;
   static int userid = 0;
+  
+
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -48,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // DatabaseApi.insertUser(User(id: 0, name: "Nam", email: "nppnam05@gmail.com", password: "a", totalExpenditure: 0, totalRevenue: 0), onSuccess: (){}, onError: (Error){});
     // DatabaseApi.insertWallet(Wallet(id: 0, userId: 0, balance: 1000), onSuccess: (){}, onError: (Error){});
 
-    List<Categories> array = [
+    List <Categories> array = [
       Categories(id: 0, name: "Ăn uống", cost: 1000),
       Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
       Categories(id: 2, name: "Mua sắm", cost: 50),
@@ -56,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Categories(id: 4, name: "Giải trí", cost: 150),
       Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
     ];
+
     // array.forEach((it) =>
     // DatabaseApi.insertCategory(it, onSuccess: (){}, onError: (Error){})
     // );
@@ -158,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ];
 
     // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
+
 
     List<Budget> budgets = [
       Budget(

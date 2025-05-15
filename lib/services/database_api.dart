@@ -44,16 +44,18 @@ class DatabaseApi {
 
   // ----------------- User -----------------
 
-  static Future<void> insertUser(
+  static Future<int> insertUser(
     User user, {
     required OnSuccess onSuccess,
     required OnError onError,
   }) async {
     try {
-      await _userDao.insertUser(user);
+      final id = await _userDao.insertUser(user);
       onSuccess();
+      return id;
     } catch (e) {
       onError(e);
+      rethrow; // Ensures the error is propagated if needed
     }
   }
 
@@ -90,6 +92,10 @@ class DatabaseApi {
   static Future<User?> getUserById(int id) async {
     return await _userDao.getUserById(id);
   }
+
+  static Future<User?> getUserByEmail(String email) async {
+  return await _userDao.findUserByEmail(email);
+}
 
   // ----------------- Wallet -----------------
 

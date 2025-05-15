@@ -235,8 +235,21 @@ class _$UserDao extends UserDao {
   }
 
   @override
-  Future<void> insertUser(User user) async {
-    await _userInsertionAdapter.insert(user, OnConflictStrategy.abort);
+  Future<User?> findUserByEmail(String email) async {
+    return _queryAdapter.query('SELECT * FROM users WHERE email = ?1 LIMIT 1',
+        mapper: (Map<String, Object?> row) => User(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            email: row['email'] as String,
+            password: row['password'] as String,
+            totalExpenditure: row['totalExpenditure'] as double,
+            totalRevenue: row['totalRevenue'] as double),
+        arguments: [email]);
+  }
+
+  @override
+  Future<int> insertUser(User user) async {
+    return _userInsertionAdapter.insertAndReturnId(user, OnConflictStrategy.abort);
   }
 
   @override
@@ -248,6 +261,7 @@ class _$UserDao extends UserDao {
   Future<void> deleteUser(User user) async {
     await _userDeletionAdapter.delete(user);
   }
+
 }
 
 class _$WalletDao extends WalletDao {

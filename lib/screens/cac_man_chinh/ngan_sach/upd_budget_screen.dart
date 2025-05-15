@@ -19,16 +19,12 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
   List<Budget> budgets = [];
 
   // Danh sách category giả lập để hiển thị tên danh mục
-  List<Categories> categories = [];
+  List<Categories> _categories = [];
 
   // Biến để lưu trạng thái chỉnh sửa
   Budget? _editingBudget;
-  Categories? _selectedCategory;
-  int? _selectedCategoryID;
   int _userID = -1;
 
-  int? monthSelected;
-  int? yearSelected;
 
   @override
   void initState() {
@@ -71,14 +67,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
     TextEditingController amountController = TextEditingController(
       text: budget.amount.toString(),
     );
-    TextEditingController monthController = TextEditingController(
-      text: budget.month.toString(),
-    );
-    TextEditingController yearController = TextEditingController(
-      text: budget.year.toString(),
-    );
 
-    _selectedCategory = categories.where((it) => it.id == budget.categoryId).toList()[0];
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -86,27 +75,24 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dropdown để chọn category
-          DropdownButtonFormField<Categories>(
+          DropdownButtonFormField<int>(
             decoration: const InputDecoration(
               labelText: 'Danh mục',
               border: OutlineInputBorder(),
             ),
-            value: _selectedCategory,
+            value: budget.categoryId,
             items:
-                categories.map((Categories category) {
-                  return DropdownMenuItem<Categories>(
-                    value: category,
+                _categories.map((category) {
+                  return DropdownMenuItem<int>(
+                    value: category.id,
                     child: Text(category.name),
                   );
                 }).toList(),
-            onChanged: (Categories? newValue) {
+            onChanged: (newValue) {
               setState(() {
-                _selectedCategoryID = newValue!.id!;
-                _selectedCategory = newValue;
+               budget.categoryId = newValue!;     
               });
             },
-            validator:
-                (value) => value == null ? 'Vui lòng chọn danh mục' : null,
           ),
           const SizedBox(height: 8),
           // TextField để chỉnh sửa amount
@@ -125,10 +111,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
               labelText: 'Tháng',
               border: OutlineInputBorder(),
             ),
-            value:
-                monthController.text.isNotEmpty
-                    ? int.tryParse(monthController.text)
-                    : null,
+            value: budget.month,
             items: List.generate(12, (index) {
               int month = index + 1;
               return DropdownMenuItem(
@@ -138,8 +121,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
             }),
             onChanged: (value) {
               setState(() {
-                monthSelected = value;
-                monthController.text = value.toString();
+               budget.month = value!;
               });
             },
           ),
@@ -150,18 +132,14 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
               labelText: 'Năm',
               border: OutlineInputBorder(),
             ),
-            value:
-                yearController.text.isNotEmpty
-                    ? int.tryParse(yearController.text)
-                    : null,
+            value: budget.year,
             items: List.generate(10, (index) {
               int year = DateTime.now().year - 8 + index;
               return DropdownMenuItem(value: year, child: Text('$year'));
             }),
             onChanged: (value) {
               setState(() {
-                yearSelected = value;
-                yearController.text = value.toString();
+                budget.year = value!; 
               });
             },
           ),
@@ -174,14 +152,10 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
                 onPressed: () {
                   // update
                   double newAmount = double.parse(amountController.text);
-                  int newMonth = int.parse(monthController.text);
-                  int newYear = int.parse(yearController.text);
+
                   _updateBudget(
                     budget,
-                    newAmount,
-                    monthSelected ?? newMonth,
-                    yearSelected ?? newYear,
-                    _selectedCategoryID ?? _selectedCategory!.id!,
+                    newAmount
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -218,7 +192,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
         children: [
           ListTile(
             title: Text(
-              'Danh mục: ${index + 1} ${categories[budget.categoryId].name ?? 'Không xác định'}',
+              'Danh mục: ${index + 1} ${_categories[budget.categoryId].name ?? 'Không xác định'}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
@@ -233,10 +207,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
             ),
             onTap: () {
               setState(() {
-                _editingBudget =
-                    isEditing
-                        ? null
-                        : budget; // nếu đã click trước đó thì trả về null
+                _editingBudget = isEditing ? null : budget; // nếu đã click trước đó thì trả về null
               });
             },
           ),
@@ -264,9 +235,9 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
     DatabaseApi.deleteBudget(
       budget,
       onSuccess: () {
-        print("Xoa thanh cong");
+        debugPrint("Xoa thanh cong");
       },
-      onError: (Error) {},
+      onError: (error) {},
     );
 
     setState(() {
@@ -282,44 +253,67 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
   void _updateBudget(
     Budget budget,
     double newAmount,
-    int newMonth,
-    int newYear,
-    int newIdCategory,
   ) {
-    print("$newMonth");
+    var budgetTemp =
+        budgets
+            .where(
+              (it) =>
+                  it.year == budget.year &&
+                  it.month == budget.month &&
+                  it.categoryId == budget.categoryId &&
+                  it.id != budget.id,
+            )
+            .toList();
 
-    setState(() {
-      budget.amount = newAmount;
-      budget.month = newMonth;
-      budget.year = newYear;
-      budget.categoryId = newIdCategory;
-      _editingBudget = null; // Đóng form chỉnh sửa sau khi cập nhật
-    });
+    if (budgetTemp.isNotEmpty) {
+      setState(() {
+        budgetTemp[0].amount += newAmount;
+        budgets.remove(budget);
+      });
+      DatabaseApi.updateBudget(
+        budgetTemp[0],
+        onSuccess: () {
+          debugPrint("Update thanh cong");
+        },
+        onError: (error) {},
+      );
+      DatabaseApi.deleteBudget(
+        budget,
+        onSuccess: () {
+          debugPrint("Xoa thanh cong");
+        },
+        onError: (Error) {},
+      );
+    } else {
+      setState(() {
+        budget.amount = newAmount;
+        _editingBudget = null; // Đóng form chỉnh sửa sau khi cập nhật
+      });
+      DatabaseApi.updateBudget(
+        budget,
+        onSuccess: () {
+          debugPrint("Update thanh cong");
+        },
+        onError: (Error) {},
+      );
+    }
 
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Đã cập nhật ngân sách')));
-
-    DatabaseApi.updateBudget(
-      budget,
-      onSuccess: () {
-        print("Update thanh cong");
-      },
-      onError: (Error) {},
-    );
   }
 
   Future<void> _loadData() async {
     _userID = LoginScreen.userid;
 
-    categories.clear();
+    _categories.clear();
     budgets.clear();
 
     var resultCategory = await DatabaseApi.getAllCategories();
     var resultBudget = await DatabaseApi.getBudgetsByUserId(_userID);
 
     setState(() {
-      categories.addAll(resultCategory);
+      _categories.addAll(resultCategory);
       budgets.addAll(resultBudget);
     });
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
+import 'package:moneytrack/screens/bao_mat/login_screen.dart';
+import 'package:moneytrack/services/database_api.dart';
 
 class UpdTransaction extends StatefulWidget {
   const UpdTransaction({super.key, required this.title});
@@ -12,60 +15,30 @@ class UpdTransaction extends StatefulWidget {
 }
 
 class _UpdTransactionState extends State<UpdTransaction> {
-  // Giả lập danh sách giao dịch (trong thực tế, bạn có thể lấy từ SQLite)
-  final List<TransactionModel > _transactions = [
-  TransactionModel (
-    id: 1,
-    userId: 1,
-    categoryId: 1,
-    type: 'Chi',
-    amount: 200000,
-    description: 'Mua đồ ăn',
-    transactionDate: DateTime(2025, 5, 1).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-  TransactionModel (
-    id: 2,
-    userId: 1,
-    categoryId: 2,
-    type: 'Chi',
-    amount: 1000000,
-    description: 'Mua quần áo',
-    transactionDate: DateTime(2025, 5, 2).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-  TransactionModel (
-    id: 3,
-    userId: 1,
-    categoryId: 3,
-    type: 'Thu',
-    amount: 5000000,
-    description: 'Lương tháng',
-    transactionDate: DateTime(2025, 5, 3).millisecondsSinceEpoch,
-    createdAt: DateTime.now().millisecondsSinceEpoch,
-  ),
-];
+  List<TransactionModel> _transactions = [];
+  List<Categories> _categories = [];
+  DateTime? _selectedDate;
+  
 
-
-  // Danh sách danh mục (giả lập)
-  final Map<int, String> _categories = {
-    1: 'Food',
-    2: 'Shopping',
-    3: 'Rental',
-  };
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
 
   // Biến để lưu trạng thái chỉnh sửa
-  TransactionModel ? _editingTransaction;
+  TransactionModel? _editingTransaction;
 
-    @override
+  String? _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       body: _buildTransactionList(),
     );
   }
@@ -82,7 +55,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
   }
 
   // Hàm tạo item trong ListView
-  Widget _itemTransaction(TransactionModel  transaction) {
+  Widget _itemTransaction(TransactionModel transaction) {
     bool isEditing = _editingTransaction == transaction;
 
     return Card(
@@ -91,7 +64,9 @@ class _UpdTransactionState extends State<UpdTransaction> {
         children: [
           ListTile(
             leading: Icon(
-              transaction.type == 'Thu' ? Icons.arrow_downward : Icons.arrow_upward,
+              transaction.type == 'Thu'
+                  ? Icons.arrow_downward
+                  : Icons.arrow_upward,
               color: transaction.type == 'Thu' ? Colors.green : Colors.red,
             ),
             title: Text("${transaction.amount.toStringAsFixed(2)} VNĐ"),
@@ -101,7 +76,10 @@ class _UpdTransactionState extends State<UpdTransaction> {
             ),
             onTap: () {
               setState(() {
-                _editingTransaction = isEditing ? null : transaction; // nếu đã click trước đó thì trả về null
+                _editingTransaction =
+                    isEditing
+                        ? null
+                        : transaction; // nếu đã click trước đó thì trả về null
               });
             },
           ),
@@ -112,34 +90,40 @@ class _UpdTransactionState extends State<UpdTransaction> {
   }
 
   // Hàm tạo form chỉnh sửa
-  Widget _buildEditForm(TransactionModel  transaction) {
-    int selectedCategoryId = transaction.categoryId;
-    String selectedType = transaction.type;
-    TextEditingController amountController = TextEditingController(text: transaction.amount.toString());
-    TextEditingController descriptionController = TextEditingController(text: transaction.description);
-    DateTime selectedDate = DateTime.fromMillisecondsSinceEpoch(transaction.transactionDate);
+  Widget _buildEditForm(TransactionModel transaction) {
+    String _selectedTypeIndex = transaction.type;
+    TextEditingController amountController = TextEditingController(
+      text: transaction.amount.toString(),
+    );
+    TextEditingController descriptionController = TextEditingController(
+      text: transaction.description,
+    );
+    DateTime selectedDate = DateTime.fromMillisecondsSinceEpoch(
+      transaction.transactionDate,
+    );
 
     return Padding(
       padding: EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // DropdownButtonFormField cho danh mục
+          // Dropdown để chọn category
           DropdownButtonFormField<int>(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Danh mục',
               border: OutlineInputBorder(),
             ),
-            value: selectedCategoryId,
-            items: _categories.entries.map((entry) {
-              return DropdownMenuItem<int>(
-                value: entry.key,
-                child: Text(entry.value),
-              );
-            }).toList(),
-            onChanged: (value) {
+            value: transaction.categoryId,
+            items:
+                _categories.map((category) {
+                  return DropdownMenuItem<int>(
+                    value: category.id,
+                    child: Text(category.name),
+                  );
+                }).toList(),
+            onChanged: (newValue) {
               setState(() {
-                selectedCategoryId = value!;
+                transaction.categoryId = newValue!;
               });
             },
           ),
@@ -151,16 +135,18 @@ class _UpdTransactionState extends State<UpdTransaction> {
               labelText: 'Loại giao dịch',
               border: OutlineInputBorder(),
             ),
-            value: selectedType,
-            items: _types.map((type) {
-              return DropdownMenuItem<String>(
-                value: type,
-                child: Text(type),
-              );
-            }).toList(),
+            value: _selectedTypeIndex,
+            items:
+                _types.map((type) {
+                  return DropdownMenuItem<String>(
+                    value: type,
+                    child: Text(type),
+                  );
+                }).toList(),
             onChanged: (value) {
               setState(() {
-                selectedType = value!;
+                _selectedTypeIndex = value!;
+                _selectedType = value!;
               });
             },
           ),
@@ -192,12 +178,13 @@ class _UpdTransactionState extends State<UpdTransaction> {
             onTap: () async {
               final DateTime? picked = await showDatePicker(
                 context: context,
-                initialDate: selectedDate,
-                firstDate: DateTime(2000),
+                initialDate: _selectedDate ?? selectedDate,
+                firstDate: DateTime(2020),
                 lastDate: DateTime(2101),
               );
               if (picked != null) {
                 setState(() {
+                  _selectedDate = picked;
                   selectedDate = picked;
                 });
               }
@@ -207,9 +194,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
                 labelText: 'Ngày giao dịch',
                 border: OutlineInputBorder(),
               ),
-              child: Text(
-                DateFormat('dd/MM/yyyy').format(selectedDate),
-              ),
+              child: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
             ),
           ),
           const SizedBox(height: 16),
@@ -220,39 +205,45 @@ class _UpdTransactionState extends State<UpdTransaction> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  // Cập nhật giao dịch
-                  final updatedTransaction = TransactionModel (
-                    id: transaction.id,
-                    userId: transaction.userId,
-                    categoryId: selectedCategoryId!,
-                    type: selectedType,
-                    amount: double.parse(amountController.text),
-                    description: descriptionController.text,
-                    transactionDate: selectedDate.millisecondsSinceEpoch,
-                    createdAt: transaction.createdAt,
-                  );
 
-                  setState(() {
-                    _transactions[_transactions.indexOf(transaction)] = updatedTransaction;
-                    _editingTransaction = null;
-                  });
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cập nhật giao dịch thành công!')),
+                  _updateTransaction(
+                    transaction,
+                    double.parse(amountController.text),
+                    descriptionController.text,
+                    _selectedDate ?? selectedDate,
+                    _selectedType ?? _selectedTypeIndex,
                   );
+                  // xets lại giá trị
+                  _selectedType = null;
+                  _selectedDate = null;
                 },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text('Cập nhật'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  // Xóa giao dịch
-                  setState(() {
-                    _transactions.remove(transaction);
-                    _editingTransaction = null;
-                  });
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Xóa giao dịch thành công!')),
+              ElevatedButton(
+                onPressed: () async {
+                  // chức năng xoá
+                  await DatabaseApi.deleteTransaction(
+                    transaction,
+                    onSuccess: () async {
+                      setState(() {
+                        _transactions.remove(transaction);
+                        _editingTransaction = null;
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Xoá giao dịch thành công!'),
+                        ),
+                      );
+                    },
+                    onError: (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lỗi xoá giao dịch: $e')),
+                      );
+                    },
                   );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -265,4 +256,105 @@ class _UpdTransactionState extends State<UpdTransaction> {
     );
   }
 
+  Future<void> _updateTransaction(
+    TransactionModel transaction,
+    double amount,
+    String desc,
+    DateTime selectedDate,
+    String type,
+  ) async {
+
+    // xét các trương hợp cập nhật lại
+    var totalTH = 0.0;
+
+    if(type == transaction.type) {
+      if(type == "Chi") {
+        totalTH += transaction.amount;
+        totalTH -= amount;
+      } else {
+        totalTH -= transaction.amount;
+        totalTH += amount;
+      }
+    } else {
+      if(type == "Chi") {
+        totalTH -= transaction.amount;
+        totalTH -= amount;
+      } else {
+        totalTH += transaction.amount;
+        totalTH += amount;
+      }
+    }
+
+
+    // Cập nhật lại tổng thu/chi Wallet
+    var walletsList = await DatabaseApi.getWalletsByUserId(transaction.userId);
+    var wallet = walletsList[0];
+   
+    wallet.balance += totalTH;
+
+    await DatabaseApi.updateWallet(
+      wallet,
+      onSuccess: () {
+        print("Cập nhật số dư ví thành công");
+      },
+      onError: (e) {
+        print("Lỗi khi cập nhật ví: $e");
+      },
+    );
+
+    // cập nhập ngân sách nếu có
+    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
+    var budget = budgetsList.where((budget) => budget.categoryId == transaction.categoryId).firstOrNull;
+
+    if (budget != null) {
+      budget.amount += totalTH;
+
+
+      DatabaseApi.updateBudget(
+        budget,
+        onSuccess: () {
+          print("Cập nhật ngân sách thành công");
+        },
+        onError: (e) {
+          print("Lỗi khi cập nhật ngân sách: $e");
+        },
+      );
+    }
+
+     setState(() {
+      // Cập nhật thông tin giao dịch
+      transaction.amount = amount;
+      transaction.description = desc;
+      transaction.transactionDate = selectedDate.millisecondsSinceEpoch;
+      transaction.type = type;
+      // đóng form chỉnh sửa
+      _editingTransaction = null;
+    });
+
+    // Cập nhật giao dịch trong cơ sở dữ liệu
+    DatabaseApi.updateTransaction(
+      transaction,
+      onSuccess: () {
+        print("Cập nhật giao dịch thành công");
+      },
+      onError: (e) {
+        print("Lỗi khi cập nhật giao dịch: $e");
+      },
+    );
+  }
+
+  Future<void> _loadData() async {
+    int id_user = LoginScreen.userid;
+
+    _categories.clear();
+    _transactions.clear();
+    // Lấy danh sách từ cơ sở dữ liệu
+    final categoriesFromDb = await DatabaseApi.getAllCategories();
+    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(id_user);
+
+    setState(() {
+      _categories = categoriesFromDb;
+      _transactions = transactionFromDb;
+    });
+  }
 }

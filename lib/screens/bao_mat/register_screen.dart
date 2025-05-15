@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/services/database_api.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -113,7 +114,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     User newUser = User(
-      id: 0,
       name: name,
       email: email,
       password: password,
@@ -121,13 +121,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       totalRevenue: 0.0,
     );
 
-    DatabaseApi.insertUser(
-    newUser,
-     onSuccess: () {
+    int userId = await DatabaseApi.insertUser(
+      newUser,
+      onSuccess: () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Đăng ký thành công')),
         );
-        
+
         Navigator.pop(context); // Quay lại màn hình trước
       },
       onError: (e) {
@@ -136,5 +136,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       },
     );
+
+    // Tạo ví mặc định cho người dùng mới
+    Wallet defaultWallet = Wallet(
+      userId: userId,
+      balance: 0.0,
+    );
+    await DatabaseApi.insertWallet(
+      defaultWallet,
+      onSuccess: () {},
+      onError: (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tạo ví thất bại: $e')),
+        );
+      },
+    );
+
   }
 }
