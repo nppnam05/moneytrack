@@ -4,6 +4,7 @@ import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
+import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import 'package:moneytrack/services/database_api.dart';
 import 'package:moneytrack/utils/load_total_cost.dart';
 
@@ -20,7 +21,7 @@ class _AddTransactionState extends State<AddTransaction> {
   // Danh sách danh mục
   List<Categories> _categories = [];
   List<TransactionModel> _transactionModel = [];
-  var _user;
+  int? _currentUserId;
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
@@ -35,7 +36,7 @@ class _AddTransactionState extends State<AddTransaction> {
   @override
   void initState(){
     super.initState();
-    _loadCategories();
+    _loadData();
   }
   
 
@@ -70,7 +71,7 @@ class _AddTransactionState extends State<AddTransaction> {
   final double amount = double.parse(_amountController.text);
 
   final newTransaction = TransactionModel(
-    userId: 0,
+    userId: _currentUserId!,
     categoryId: _selectedCategoryId!,
     type: _selectedType!,
     amount: amount,
@@ -84,7 +85,9 @@ class _AddTransactionState extends State<AddTransaction> {
   await DatabaseApi.insertTransaction(
     newTransaction,
     onSuccess: () async {
-      await UserUtils.syncUserRevenueAndExpenditure(0);
+
+      // Cập nhật lại ví
+      await UserUtils.syncUserRevenueAndExpenditure(_currentUserId!);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Thêm giao dịch thành công!')),
@@ -106,7 +109,6 @@ class _AddTransactionState extends State<AddTransaction> {
   );  
 }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,15 +209,17 @@ class _AddTransactionState extends State<AddTransaction> {
     );
   }
 
-  Future<void> _loadCategories() async {
-  final categoriesFromDb = await DatabaseApi.getAllCategories();
-  final userFromDb = await DatabaseApi.getUserById(0);
-  final transactionFromDb = await DatabaseApi.getTransactionsByUserId(0);
+  Future<void> _loadData() async {
+    final user = await DatabaseApi.getUserByEmail(LoginScreen.loggedInUserEmail!);
+    if (user == null) return;
 
-  setState(() {
-    _categories = categoriesFromDb;
-    _user = userFromDb;
-    _transactionModel = transactionFromDb;
-  });
+    final categoriesFromDb = await DatabaseApi.getAllCategories();
+    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(user.id!);
+    
+    setState(() {
+      _currentUserId = user.id;
+      _categories = categoriesFromDb;
+      _transactionModel = transactionFromDb;
+    });
   }
 }

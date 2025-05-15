@@ -8,7 +8,9 @@ class UserUtils {
     double revenue = 0;
     double expenditure = 0;
     double totalBalance = 0;
+    int? idWallet;
 
+    // cập nhật tổng thu và chi
     final transactions = await DatabaseApi.getTransactionsByUserId(userId);
     for (final t in transactions) {
       if (t.type == "Thu") {
@@ -19,6 +21,7 @@ class UserUtils {
     }
     totalBalance = revenue - expenditure;
 
+    // Cập nhật tổng thu và chi
     final user = await DatabaseApi.getUserById(userId);
     if (user != null) {
       user.totalRevenue = revenue;
@@ -31,7 +34,12 @@ class UserUtils {
       );
     }
 
-    final wallet = Wallet(id: 0, userId: userId, balance: totalBalance);
+    // Cập nhật tiền mặt 
+    final wallets = await DatabaseApi.getWalletsByUserId(userId);
+    for (final t in wallets) {
+      idWallet = t.id;
+    }
+    final wallet = Wallet(id: idWallet, userId: userId, balance: totalBalance);
     await DatabaseApi.updateWallet(
       wallet,
       onSuccess: () => print("Cập nhật số dư ví thành công."),

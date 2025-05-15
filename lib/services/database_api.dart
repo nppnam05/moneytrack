@@ -91,6 +91,10 @@ class DatabaseApi {
     return await _userDao.getUserById(id);
   }
 
+  static Future<User?> getUserByEmail(String email) async {
+  return await _userDao.findUserByEmail(email);
+}
+
   // ----------------- Wallet -----------------
 
   static Future<void> insertWallet(

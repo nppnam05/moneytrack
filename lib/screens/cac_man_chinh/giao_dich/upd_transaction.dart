@@ -30,7 +30,7 @@ class _UpdTransactionState extends State<UpdTransaction>{
     _loadData();
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -212,6 +212,7 @@ class _UpdTransactionState extends State<UpdTransaction>{
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Cập nhật giao dịch thành công!')),
                       );
+                      // Cập nhật lại ví
                       await UserUtils.syncUserRevenueAndExpenditure(updatedTransaction.userId);
                     },
                     onError: (e) {
@@ -227,6 +228,7 @@ class _UpdTransactionState extends State<UpdTransaction>{
 
               ElevatedButton(
                 onPressed: () async {
+
                   // chức năng xoá
                   await DatabaseApi.deleteTransaction(
                     transaction,
@@ -260,12 +262,12 @@ class _UpdTransactionState extends State<UpdTransaction>{
   }
 
   Future<void> _loadData() async {
-  final categoriesFromDb = await DatabaseApi.getAllCategories();
-  final transactionFromDb = await DatabaseApi.getAllTransactions();
-  setState(() {
-    _categories = categoriesFromDb;
-    _transactions = transactionFromDb;
-  });
+    final categoriesFromDb = await DatabaseApi.getAllCategories();
+    final transactionFromDb = await DatabaseApi.getAllTransactions();
+    setState(() {
+      _categories = categoriesFromDb;
+      _transactions = transactionFromDb;
+    });
   }
 
 }

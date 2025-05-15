@@ -13,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 
   final String title;
   static int userid = -1;
+  static String? loggedInUserEmail;
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -264,6 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       LoginScreen.userid = user.id!;
+      LoginScreen.loggedInUserEmail = email; // Lưu email để lấy id_User
       Navigator.pushReplacementNamed(context, '/main_manager');
     } else {
       ScaffoldMessenger.of(

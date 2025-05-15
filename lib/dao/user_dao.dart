@@ -3,6 +3,9 @@ import '../models/user.dart';
 
 @dao
 abstract class UserDao {
+  @Query('SELECT * FROM users WHERE email = :email LIMIT 1')
+  Future<User?> findUserByEmail(String email);
+
   @Query('SELECT * FROM users')
   Future<List<User>> getAllUsers();
 
