@@ -1,12 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/screens/main_screen.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'screens/screens.dart';
 import 'utils/database/database_api.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async  {
   WidgetsFlutterBinding.ensureInitialized();// thiết cho initDatabase async, await một Future trước khi chạy ứng dụng
   await DatabaseApi.initDatabase();// tạo kết nối với Database ngay từ lúc ban đầu
+
+// khởi tạo FlutterLocalNotificationsPlugin
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  // Khởi tạo cấu hình notification cho Android
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+
+  // Khởi tạo plugin notification với cấu hình trên
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  // kiểm tra xem đã có quyền chưa
+  // nếu chưa có quyền thì sẽ xin quyền
+  await flutterLocalNotificationsPlugin
+    .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+    ?.requestNotificationsPermission();
+
   runApp(const MyApp());
 }
 
@@ -50,6 +71,48 @@ class MyApp extends StatelessWidget {
         }
         return null;
       },
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Local Notifications Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            await _showNotification();
+          },
+          child: const Text('Show Notification'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showNotification() async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      channelDescription: 'your_channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Hello!',
+      'This is a test notification.',
+      platformChannelSpecifics,
     );
   }
 }

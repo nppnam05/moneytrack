@@ -55,7 +55,6 @@ class _AddTransactionState extends State<AddTransaction> {
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,37 +180,6 @@ class _AddTransactionState extends State<AddTransaction> {
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
 
-    // Kiểm tra số tiền có lớn hơn ngân sách không nếu là chi
-    Budget? budgets =
-        _budgets
-            .where(
-              (budget) =>
-                  budget.categoryId == _selectedCategoryId &&
-                  budget.userId == _userId,
-            )
-            .firstOrNull;
-
-    if (budgets != null) {
-      if (_selectedType == 'Chi') {
-        if (amount > budgets.amount) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Số tiền vượt quá ngân sách tháng này!'),
-            ),
-          );
-          return;
-        }
-        else{
-          budgets.amount = budgets.amount - amount;
-          DatabaseApi.updateBudget(
-            budgets,
-            onSuccess: () {},
-            onError: (e) {},
-          );
-        }
-      }
-    }
-
     // cập nhập wallet
     var wallets = await DatabaseApi.getWalletsByUserId(_userId);
     var wallet = wallets[0];
@@ -219,12 +187,12 @@ class _AddTransactionState extends State<AddTransaction> {
     if (newTransaction.type == 'Chi') {
       // kiểm tra số dư ví có đủ không
       if (wallet.balance < newTransaction.amount) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Số dư ví không đủ!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Số dư ví không đủ!')));
         return;
       }
-      
+
       wallet.balance = wallet.balance - newTransaction.amount;
     } else {
       wallet.balance = wallet.balance + newTransaction.amount;
@@ -239,6 +207,22 @@ class _AddTransactionState extends State<AddTransaction> {
         print('Lỗi khi cập nhật: $e');
       },
     );
+
+    Budget? budgets =
+        _budgets
+            .where(
+              (budget) =>
+                  budget.categoryId == _selectedCategoryId &&
+                  budget.userId == _userId,
+            )
+            .firstOrNull;
+
+    if (budgets != null) {
+      if (_selectedType == 'Chi') {
+        budgets.amount = budgets.amount - amount;
+        DatabaseApi.updateBudget(budgets, onSuccess: () {}, onError: (e) {});
+      }
+    }
 
     // Thêm giao dịch
     await DatabaseApi.insertTransaction(
@@ -262,10 +246,7 @@ class _AddTransactionState extends State<AddTransaction> {
         ).showSnackBar(SnackBar(content: Text('Lỗi khi thêm giao dịch: $e')));
       },
     );
-
-
   }
-
 
   Future<void> _loadData() async {
     int id_user = LoginScreen.userid;

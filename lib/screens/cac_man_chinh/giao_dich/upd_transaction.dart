@@ -280,28 +280,6 @@ class _UpdTransactionState extends State<UpdTransaction> {
       }
     }
 
-    // cập nhập ngân sách nếu có
-    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
-    var budget =
-        budgetsList
-            .where((budget) => budget.categoryId == transaction.categoryId)
-            .firstOrNull;
-
-    if (budget != null) {
-      // Kiểm tra số tiền có lớn hơn ngân sách không nếu là chi
-      if (totalTH * -1 > budget.amount) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Số tiền vượt quá ngân sách tháng này!'),
-          ),
-        );
-        return;
-      }
-
-      budget.amount += totalTH;
-
-      DatabaseApi.updateBudget(budget, onSuccess: () {}, onError: (e) {});
-    }
 
     // Cập nhật lại tổng thu/chi Wallet
     var walletsList = await DatabaseApi.getWalletsByUserId(transaction.userId);
@@ -309,10 +287,10 @@ class _UpdTransactionState extends State<UpdTransaction> {
 
     // kiểm tra số dư ví có đủ không
     if (wallet.balance < totalTH * -1) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Số dư ví không đủ!')),
-        );
-        return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Số dư ví không đủ!')));
+      return;
     }
 
     wallet.balance += totalTH;
@@ -326,6 +304,20 @@ class _UpdTransactionState extends State<UpdTransaction> {
         print("Lỗi khi cập nhật ví: $e");
       },
     );
+
+    // cập nhập ngân sách nếu có
+    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
+    var budget =
+        budgetsList
+            .where((budget) => budget.categoryId == transaction.categoryId)
+            .firstOrNull;
+
+    if (budget != null) {
+      budget.amount += totalTH;
+
+      DatabaseApi.updateBudget(budget, onSuccess: () {}, onError: (e) {});
+    }
+
 
     setState(() {
       // Cập nhật thông tin giao dịch

@@ -3,6 +3,7 @@ import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
+import 'package:moneytrack/utils/show_notification.dart';
 import '../../models/budget.dart';
 import '../../widgets/chi_tieu_pie_chart.dart';
 
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   List<Categories> listCategory = [];
   List<Categories> listCategoryMax = [];
   List<Categories> categoriesNganSach = [];
+  
 
   List<Budget> budgets = [];
   double _tongThu = 0;
@@ -83,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               'Danh sách ngân sách tháng này',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListChiTieu(categoriesNganSach), // danh sách ngân sách
+            _itemListNganSach(categoriesNganSach), // danh sách ngân sách
           ],
         ),
       ),
@@ -222,6 +224,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  // Danh sách Ngan sách
+  Widget _itemListNganSach(List<Categories> Category) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: Category.length,
+      itemBuilder: (context, index) {
+        final categoryStatic = Category[index];
+
+        return _createItemChiTieu(categoryStatic);
+      },
+    );
+  }
+
   Widget _createItemChiTieu(Categories category) {
     IconData icon;
     Color color;
@@ -336,9 +352,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       for (var it in budgets) {
         categoriesNganSach[it.categoryId].cost += it.amount;
       }
-      
+
       categoriesNganSach.sort((a, b) => b.cost.compareTo(a.cost));
     });
+
+    for (int i = 0; i < categoriesNganSach.length; i++) {
+      if (ShowNotification.checkMap[categoriesNganSach[i].name] == null || ShowNotification.checkMap[categoriesNganSach[i].name] == false) {
+        ShowNotification.checkMap[categoriesNganSach[i].name] = true;
+        if (categoriesNganSach[i].cost < 0) {
+          await ShowNotification.showBudgetNotification(
+            'Cảnh báo ngân sách!',
+            'Bạn đã vượt quá ngân sách danh mục ${categoriesNganSach[i].name}. Bạn chỉ còn ${formatCurrency(categoriesNganSach[i].cost)} VNĐ.',
+            i,
+          );
+        } else if (categoriesNganSach[i].cost == 0) {
+          await ShowNotification.showBudgetNotification(
+            'Cảnh báo ngân sách!',
+            'Bạn đã sử dụng hết ngân sách danh mục ${categoriesNganSach[i].name}',
+            i,
+          );
+        }
+      }
+    }
   }
 
   // định dạng tiền
@@ -359,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     final formattedWhole = buffer.toString().split('').reversed.join();
-    if(decimalPart == "00"){
+    if (decimalPart == "00") {
       return formattedWhole;
     }
     return '$formattedWhole,$decimalPart';
@@ -370,9 +405,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     // Tính ngày đầu tuần (Thứ Hai)
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    final start = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    );
 
-    // Ngày cuối tuần 
+    // Ngày cuối tuần
     final end = start
         .add(const Duration(days: 7))
         .subtract(const Duration(milliseconds: 1));

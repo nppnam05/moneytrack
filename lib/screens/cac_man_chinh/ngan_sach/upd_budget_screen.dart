@@ -246,10 +246,13 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
       budgets.removeWhere((budget) => budget.id == id);
       _editingBudget = null; // Đóng form chỉnh sửa sau khi xóa
     });
+
+
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Đã xóa ngân sách')));
   }
+
 
   // Hàm cập nhật Budget
   void _updateBudget(
@@ -286,16 +289,12 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
       });
       DatabaseApi.updateBudget(
         budgetTemp[0],
-        onSuccess: () {
-          debugPrint("Update thanh cong");
-        },
+        onSuccess: () {},
         onError: (error) {},
       );
       DatabaseApi.deleteBudget(
         budget,
-        onSuccess: () {
-          debugPrint("Xoa thanh cong");
-        },
+        onSuccess: () {},
         onError: (Error) {},
       );
     } else {
@@ -305,9 +304,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
       });
       DatabaseApi.updateBudget(
         budget,
-        onSuccess: () {
-          debugPrint("Update thanh cong");
-        },
+        onSuccess: () {},
         onError: (Error) {},
       );
     }

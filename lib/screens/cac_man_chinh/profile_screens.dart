@@ -1,8 +1,10 @@
+import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
+import 'package:moneytrack/utils/show_notification.dart';
 
 class ProfileScreens extends StatefulWidget {
   ProfileScreens({super.key, required this.title});
@@ -68,9 +70,13 @@ class _ProfileScreensState extends State<ProfileScreens>
             SizedBox(height: 20),
             _buildWalletCard(),
             _buildUserCard(),
+            _buildDepositCard(),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                // sét lại trạng thái thông báo
+                ShowNotification.checkMap.updateAll((key, value) => false);
+
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   '/login',
                   (Route<dynamic> route) => false,
@@ -114,6 +120,19 @@ class _ProfileScreensState extends State<ProfileScreens>
         trailing: Icon(Icons.arrow_forward_ios),
         onTap: () {
           _showEditWalletDialog();
+        },
+      ),
+    );
+  }
+
+  Widget _buildDepositCard() {
+    return Card(
+      child: ListTile(
+        leading: Icon(Icons.attach_money),
+        title: Text('Nạp tiền vào ví'),
+        trailing: Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          _showDepositDialog();
         },
       ),
     );
@@ -242,6 +261,51 @@ class _ProfileScreensState extends State<ProfileScreens>
                 Navigator.of(context).pop(); // Đóng hộp thoại
               },
               child: Text('Lưu'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDepositDialog() {
+    final TextEditingController depositController = TextEditingController(
+      text: "10",
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Nạp tiền vào ví'),
+          content: TextField(
+            controller: depositController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Số tiền muốn nạp',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại
+              },
+              child: Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final amount = double.tryParse(depositController.text) ?? 0;
+                 setState(() {
+                    wallet!.balance += amount;
+                  });
+                  await DatabaseApi.updateWallet(wallet!, onSuccess: () {}, onError: (error) {});
+                  Navigator.of(context).pop(); // Đóng hộp thoại
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Nạp tiền thành công!')),
+                  );
+              },
+              child: Text('Nạp'),
             ),
           ],
         );
