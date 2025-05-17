@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/budget.dart';
 import 'package:moneytrack/models/categories.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 
 class UpdBudgetScreen extends StatefulWidget {
   const UpdBudgetScreen({super.key, required this.title});
@@ -17,6 +18,7 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
     with WidgetsBindingObserver {
   // Danh sách Budgets giả lập
   List<Budget> budgets = [];
+  List<Wallet> wallets = [];
 
   // Danh sách category giả lập để hiển thị tên danh mục
   List<Categories> _categories = [];
@@ -254,6 +256,18 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
     Budget budget,
     double newAmount,
   ) {
+    // Kiểm tra số dư trong ví
+    double totalAmount = budgets.fold(0.0, (sum, budget) {return sum + budget.amount;});
+    totalAmount -= budget.amount;
+    totalAmount += newAmount;
+    if(wallets[0].balance < totalAmount){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Số dư trong ví không đủ')),
+      );
+      return;
+    }
+    
+
     var budgetTemp =
         budgets
             .where(
@@ -308,13 +322,16 @@ class _UpdBudgetScreenState extends State<UpdBudgetScreen>
 
     _categories.clear();
     budgets.clear();
+    wallets.clear();
 
     var resultCategory = await DatabaseApi.getAllCategories();
     var resultBudget = await DatabaseApi.getBudgetsByUserId(_userID);
+    var resultWallet = await DatabaseApi.getWalletsByUserId(_userID);
 
     setState(() {
       _categories.addAll(resultCategory);
       budgets.addAll(resultBudget);
+      wallets.addAll(resultWallet);
     });
   }
 }

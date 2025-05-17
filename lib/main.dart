@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/screens/main_screen.dart';
 import 'screens/screens.dart';
-import 'services/database_api.dart';
+import 'utils/database/database_api.dart';
 
 
 void main() async  {
-  WidgetsFlutterBinding.ensureInitialized();// thiết cho init async, await một Future trước khi chạy ứng dụng
-  await DatabaseApi.init();// tạo kết nối với Database ngay từ lúc ban đầu
+  WidgetsFlutterBinding.ensureInitialized();// thiết cho initDatabase async, await một Future trước khi chạy ứng dụng
+  await DatabaseApi.initDatabase();// tạo kết nối với Database ngay từ lúc ban đầu
   runApp(const MyApp());
 }
 
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/login', 
+      initialRoute: '/main_manager',
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
         Widget? page;

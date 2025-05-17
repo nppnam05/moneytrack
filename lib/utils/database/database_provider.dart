@@ -8,9 +8,7 @@ class DatabaseProvider {
     if (_database != null) return _database!;
 
     // Nếu chưa, thì khởi tạo
-    _database = await $FloorAppDatabase
-        .databaseBuilder('app_database.db')
-        .build();
+    _database = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
 
     return _database!;
   }

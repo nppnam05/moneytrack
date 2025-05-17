@@ -1,5 +1,5 @@
 import 'package:floor/floor.dart';
-import '../models/transaction.dart';
+import '../../models/transaction.dart';
 
 @dao
 abstract class TransactionDao {

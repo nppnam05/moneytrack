@@ -1,5 +1,5 @@
 import 'package:floor/floor.dart';
-import '../models/reminder.dart';
+import '../../models/reminder.dart';
 
 @dao
 abstract class ReminderDao {

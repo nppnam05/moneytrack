@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 
 class ProfileScreens extends StatefulWidget {
   ProfileScreens({super.key, required this.title});
@@ -110,7 +110,7 @@ class _ProfileScreensState extends State<ProfileScreens>
       child: ListTile(
         leading: Icon(Icons.account_balance_wallet),
         title: Text('Số dư ví'),
-        subtitle: Text(formatCurrency(wallet?.balance ?? 0)),
+        subtitle: Text("${formatCurrency(wallet?.balance ?? 0)} VNĐ"),
         trailing: Icon(Icons.arrow_forward_ios),
         onTap: () {
           _showEditWalletDialog();

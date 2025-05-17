@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 import 'verifycode_screen.dart';
 import '../../utils/email_otp.dart';
 import 'package:collection/collection.dart';

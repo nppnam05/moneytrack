@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/budget.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 
 class AddBudgetScreen extends StatefulWidget {
   AddBudgetScreen({super.key, required this.title});
@@ -26,6 +27,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
   Categories? _selectedCategory;
   int _userID = -1;
   List<Budget> budgets = [];
+  List<Wallet> wallets = [];
 
   @override
   void initState() {
@@ -171,7 +173,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
           const SizedBox(height: 20),
           // Nút để thêm ngân sách
           ElevatedButton(
-            onPressed: _addOrUpdateBudget,
+            onPressed: _addBudget,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               minimumSize: const Size(double.infinity, 50),
@@ -186,7 +188,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
     );
   }
 
-  void _addOrUpdateBudget() {
+  void _addBudget() {
     // Kiểm tra dữ liệu đầu vào
     if (_selectedCategory == null ||
         _amountController.text.isEmpty ||
@@ -214,10 +216,19 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
       createdAt:DateTime.now().millisecondsSinceEpoch, 
     );
 
-    var budgetTemp = budgets.where((it) =>it.userId == _userID && it.categoryId == newBudget.categoryId && it.month == newBudget.month && it.year == newBudget.year).toList();
-    if(budgetTemp.isNotEmpty){
-      budgetTemp[0].amount += newBudget.amount;
-      DatabaseApi.updateBudget(budgetTemp[0], onSuccess: (){print("update thanh cong");}, onError: (Error){});
+    var budgetTemp = budgets.where((it) =>it.userId == _userID && it.categoryId == newBudget.categoryId && it.month == newBudget.month && it.year == newBudget.year).firstOrNull;
+
+    double totalAmount = budgets.fold(0.0, (sum, budget) { return sum + budget.amount; });
+    if(wallets[0].balance < totalAmount + newBudget.amount){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Số dư trong ví không đủ')),
+      );
+      return;
+    }
+
+    if(budgetTemp != null){
+      budgetTemp.amount += newBudget.amount;
+      DatabaseApi.updateBudget(budgetTemp, onSuccess: (){print("update thanh cong");}, onError: (Error){});
     }
     else{
       DatabaseApi.insertBudget(newBudget, onSuccess: (){print("them thanh cong");}, onError: (Error){});
@@ -236,13 +247,16 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
 
     categories.clear();
     budgets.clear();
+    wallets.clear();
 
     var resultCategory = await DatabaseApi.getAllCategories();
     var resultBudget = await DatabaseApi.getBudgetsByUserId(_userID);
+    var resultWallet = await DatabaseApi.getWalletsByUserId(_userID);
 
     setState(() {
       categories.addAll(resultCategory);
       budgets.addAll(resultBudget);
+      wallets.addAll(resultWallet);
     });
   }
 }

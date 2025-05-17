@@ -1,9 +1,9 @@
-import '../models/user.dart';
-import '../models/wallet.dart';
-import '../models/transaction.dart';
-import '../models/reminder.dart';
-import '../models/budget.dart';
-import '../models/categories.dart';
+import '../../models/user.dart';
+import '../../models/wallet.dart';
+import '../../models/transaction.dart';
+import '../../models/reminder.dart';
+import '../../models/budget.dart';
+import '../../models/categories.dart';
 
 import 'app_database.dart';
 
@@ -32,7 +32,7 @@ class DatabaseApi {
   static late BudgetDao _budgetDao;
 
   /// Gọi 1 lần duy nhất trong main()
-  static Future<void> init() async {
+  static Future<void> initDatabase() async {
     _db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     _userDao = _db.userDao;
     _walletDao = _db.walletDao;

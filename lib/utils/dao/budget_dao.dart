@@ -1,5 +1,5 @@
 import 'package:floor/floor.dart';
-import '../models/budget.dart';
+import '../../models/budget.dart';
 
 @dao
 abstract class BudgetDao {

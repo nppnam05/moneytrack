@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 
 class RegisterScreen extends StatefulWidget {
   RegisterScreen({super.key, required this.title});

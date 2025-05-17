@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/screens/screens.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 import 'package:collection/collection.dart';
 import '../../models/categories.dart';
 import '../../models/transaction.dart';

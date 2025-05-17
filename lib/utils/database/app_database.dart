@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:floor/floor.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
-import '../models/user.dart';
-import '../models/wallet.dart';
-import '../models/transaction.dart';
-import '../models/reminder.dart';
-import '../models/categories.dart';
-import '../models/budget.dart';
+import '../../models/user.dart';
+import '../../models/wallet.dart';
+import '../../models/transaction.dart';
+import '../../models/reminder.dart';
+import '../../models/categories.dart';
+import '../../models/budget.dart';
 
 import '../dao/user_dao.dart';
 import '../dao/wallet_dao.dart';

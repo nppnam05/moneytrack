@@ -1,5 +1,5 @@
 import 'package:floor/floor.dart';
-import '../models/wallet.dart';
+import '../../models/wallet.dart';
 
 @dao
 abstract class WalletDao {

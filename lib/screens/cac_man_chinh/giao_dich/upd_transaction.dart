@@ -3,7 +3,7 @@ import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:moneytrack/screens/bao_mat/login_screen.dart';
-import 'package:moneytrack/services/database_api.dart';
+import 'package:moneytrack/utils/database/database_api.dart';
 
 class UpdTransaction extends StatefulWidget {
   const UpdTransaction({super.key, required this.title});
@@ -18,8 +18,6 @@ class _UpdTransactionState extends State<UpdTransaction> {
   List<TransactionModel> _transactions = [];
   List<Categories> _categories = [];
   DateTime? _selectedDate;
-  
-
 
   // Danh sách loại giao dịch
   final List<String> _types = ['Thu', 'Chi'];
@@ -205,8 +203,6 @@ class _UpdTransactionState extends State<UpdTransaction> {
             children: [
               ElevatedButton(
                 onPressed: () {
-
-
                   _updateTransaction(
                     transaction,
                     double.parse(amountController.text),
@@ -263,12 +259,11 @@ class _UpdTransactionState extends State<UpdTransaction> {
     DateTime selectedDate,
     String type,
   ) async {
-
     // xét các trương hợp cập nhật lại
     var totalTH = 0.0;
 
-    if(type == transaction.type) {
-      if(type == "Chi") {
+    if (type == transaction.type) {
+      if (type == "Chi") {
         totalTH += transaction.amount;
         totalTH -= amount;
       } else {
@@ -276,7 +271,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
         totalTH += amount;
       }
     } else {
-      if(type == "Chi") {
+      if (type == "Chi") {
         totalTH -= transaction.amount;
         totalTH -= amount;
       } else {
@@ -285,11 +280,41 @@ class _UpdTransactionState extends State<UpdTransaction> {
       }
     }
 
+    // cập nhập ngân sách nếu có
+    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
+    var budget =
+        budgetsList
+            .where((budget) => budget.categoryId == transaction.categoryId)
+            .firstOrNull;
+
+    if (budget != null) {
+      // Kiểm tra số tiền có lớn hơn ngân sách không nếu là chi
+      if (totalTH * -1 > budget.amount) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Số tiền vượt quá ngân sách tháng này!'),
+          ),
+        );
+        return;
+      }
+
+      budget.amount += totalTH;
+
+      DatabaseApi.updateBudget(budget, onSuccess: () {}, onError: (e) {});
+    }
 
     // Cập nhật lại tổng thu/chi Wallet
     var walletsList = await DatabaseApi.getWalletsByUserId(transaction.userId);
     var wallet = walletsList[0];
-   
+
+    // kiểm tra số dư ví có đủ không
+    if (wallet.balance < totalTH * -1) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Số dư ví không đủ!')),
+        );
+        return;
+    }
+
     wallet.balance += totalTH;
 
     await DatabaseApi.updateWallet(
@@ -302,26 +327,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
       },
     );
 
-    // cập nhập ngân sách nếu có
-    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
-    var budget = budgetsList.where((budget) => budget.categoryId == transaction.categoryId).firstOrNull;
-
-    if (budget != null) {
-      budget.amount += totalTH;
-
-
-      DatabaseApi.updateBudget(
-        budget,
-        onSuccess: () {
-          print("Cập nhật ngân sách thành công");
-        },
-        onError: (e) {
-          print("Lỗi khi cập nhật ngân sách: $e");
-        },
-      );
-    }
-
-     setState(() {
+    setState(() {
       // Cập nhật thông tin giao dịch
       transaction.amount = amount;
       transaction.description = desc;
@@ -350,7 +356,9 @@ class _UpdTransactionState extends State<UpdTransaction> {
     _transactions.clear();
     // Lấy danh sách từ cơ sở dữ liệu
     final categoriesFromDb = await DatabaseApi.getAllCategories();
-    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(id_user);
+    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(
+      id_user,
+    );
 
     setState(() {
       _categories = categoriesFromDb;
