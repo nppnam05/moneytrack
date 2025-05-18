@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
+import 'package:moneytrack/screens/bao_mat/verifycode_screen.dart';
 import 'package:moneytrack/screens/screens.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
 import 'package:collection/collection.dart';
+import 'package:moneytrack/utils/email_otp.dart';
 import '../../models/categories.dart';
 import '../../models/transaction.dart';
 import '../../models/budget.dart';
@@ -13,8 +15,6 @@ class LoginScreen extends StatefulWidget {
 
   final String title;
   static int userid = 0;
-  
-
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -23,11 +23,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late FocusNode forcus;
 
-  var dangKy = RegisterScreen(title: "Đăng ký");
-  var quenMatKhau = ForgotPasswordScreen(title: "Quên mật khẩu");
-
   var emailControllor = TextEditingController();
-  var passwordControllor = TextEditingController();
+  var email_otp = EmailService();
 
   @override
   void initState() {
@@ -50,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // DatabaseApi.insertUser(User(id: 0, name: "Nam", email: "nppnam05@gmail.com", password: "a", totalExpenditure: 0, totalRevenue: 0), onSuccess: (){}, onError: (Error){});
     // DatabaseApi.insertWallet(Wallet(id: 0, userId: 0, balance: 1000), onSuccess: (){}, onError: (Error){});
 
-    List <Categories> array = [
+    List<Categories> array = [
       Categories(id: 0, name: "Ăn uống", cost: 1000),
       Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
       Categories(id: 2, name: "Mua sắm", cost: 50),
@@ -162,10 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
 
-
     List<Budget> budgets = [
       Budget(
-        
         userId: 0,
         categoryId: 1,
         amount: 5000000,
@@ -174,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       Budget(
-       
         userId: 0,
         categoryId: 2,
         amount: 3000000,
@@ -183,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       Budget(
-        
         userId: 0,
         categoryId: 3,
         amount: 2000000,
@@ -224,20 +217,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 border: UnderlineInputBorder(),
               ),
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: passwordControllor,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu',
-                border: UnderlineInputBorder(),
-                suffixIcon: Icon(Icons.visibility),
-              ),
-            ),
             SizedBox(height: 20),
             dangNhap(),
-            SizedBox(height: 10),
-            dangKyVaQuenMK(),
           ],
         ),
       ),
@@ -260,41 +241,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget dangKyVaQuenMK() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TextButton(
-          onPressed: () {
-            // đăng ký
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => dangKy),
-            );
-          },
-          child: Text('Đăng ký'),
-        ),
-        TextButton(
-          onPressed: () {
-            // quên mật khẩu
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => quenMatKhau),
-            );
-          },
-          child: Text('Quên mật khẩu?'),
-        ),
-      ],
-    );
-  }
-
   Future<void> _kiemTraUser() async {
     String email = emailControllor.text.trim();
-    String password = passwordControllor.text.trim();
     emailControllor.clear();
-    passwordControllor.clear();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Bạn chưa nhập đầy đủ thông tin')));
@@ -303,13 +254,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
     List<User> users = await DatabaseApi.getAllUsers();
 
-    User? user = users.firstWhereOrNull(
-      (it) => it.email == email && it.password == password,
-    );
+    User? user = users.firstWhereOrNull((it) => it.email == email);
 
     if (user != null) {
-      LoginScreen.userid = user.id!;
-      Navigator.pushReplacementNamed(context, '/main_manager');
+      // lệnh gửi mã xác thực
+      email_otp.guiMaOTP(emailControllor.text.trim());
+      print("$user");
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  VerifyCodeScreen(title: "Xác thực", userID: user.id!),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(
         context,

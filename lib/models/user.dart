@@ -9,8 +9,6 @@ class User {
 
    String email;
 
-   String password;
-
    double totalExpenditure;
 
    double totalRevenue;
@@ -19,13 +17,12 @@ class User {
     this.id,
     required this.name,
     required this.email,
-    required this.password,
     required this.totalExpenditure,
     required this.totalRevenue,
   });
   
   @override
   String toString() {
-    return "$id - $name - $email - $password - $totalExpenditure - $totalRevenue";
+    return "$id - $name - $email - $totalExpenditure - $totalRevenue";
   }
 }

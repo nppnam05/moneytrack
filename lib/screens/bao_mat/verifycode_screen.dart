@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'reset_password_screen.dart';
+import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import '../../utils/email_otp.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
@@ -58,11 +58,9 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
     bool isValid = await email_otp.verifyOTP(code);
     if (isValid) {
-      // nếu mã đúng thì qua màn hình lấy lại mật khẩu
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ResetPasswordScreen(userID: widget.userID)),
-      );
+      // Nếu mã đúng thì xóa hết các màn trước đó và khởi tạo màn mới
+      LoginScreen.userid = widget.userID;
+      Navigator.of(context).pushNamedAndRemoveUntil('/main_manager', (Route<dynamic> route) => false);
     } else {
       ScaffoldMessenger.of(
         context,

@@ -106,7 +106,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `password` TEXT NOT NULL, `totalExpenditure` REAL NOT NULL, `totalRevenue` REAL NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `totalExpenditure` REAL NOT NULL, `totalRevenue` REAL NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `wallets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `balance` REAL NOT NULL)');
         await database.execute(
@@ -168,7 +168,6 @@ class _$UserDao extends UserDao {
                   'id': item.id,
                   'name': item.name,
                   'email': item.email,
-                  'password': item.password,
                   'totalExpenditure': item.totalExpenditure,
                   'totalRevenue': item.totalRevenue
                 }),
@@ -180,7 +179,6 @@ class _$UserDao extends UserDao {
                   'id': item.id,
                   'name': item.name,
                   'email': item.email,
-                  'password': item.password,
                   'totalExpenditure': item.totalExpenditure,
                   'totalRevenue': item.totalRevenue
                 }),
@@ -192,7 +190,6 @@ class _$UserDao extends UserDao {
                   'id': item.id,
                   'name': item.name,
                   'email': item.email,
-                  'password': item.password,
                   'totalExpenditure': item.totalExpenditure,
                   'totalRevenue': item.totalRevenue
                 });
@@ -210,13 +207,24 @@ class _$UserDao extends UserDao {
   final DeletionAdapter<User> _userDeletionAdapter;
 
   @override
+  Future<User?> findUserByEmail(String email) async {
+    return _queryAdapter.query('SELECT * FROM users WHERE email = ?1 LIMIT 1',
+        mapper: (Map<String, Object?> row) => User(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            email: row['email'] as String,
+            totalExpenditure: row['totalExpenditure'] as double,
+            totalRevenue: row['totalRevenue'] as double),
+        arguments: [email]);
+  }
+
+  @override
   Future<List<User>> getAllUsers() async {
     return _queryAdapter.queryList('SELECT * FROM users',
         mapper: (Map<String, Object?> row) => User(
             id: row['id'] as int?,
             name: row['name'] as String,
             email: row['email'] as String,
-            password: row['password'] as String,
             totalExpenditure: row['totalExpenditure'] as double,
             totalRevenue: row['totalRevenue'] as double));
   }
@@ -228,28 +236,15 @@ class _$UserDao extends UserDao {
             id: row['id'] as int?,
             name: row['name'] as String,
             email: row['email'] as String,
-            password: row['password'] as String,
             totalExpenditure: row['totalExpenditure'] as double,
             totalRevenue: row['totalRevenue'] as double),
         arguments: [id]);
   }
 
   @override
-  Future<User?> findUserByEmail(String email) async {
-    return _queryAdapter.query('SELECT * FROM users WHERE email = ?1 LIMIT 1',
-        mapper: (Map<String, Object?> row) => User(
-            id: row['id'] as int?,
-            name: row['name'] as String,
-            email: row['email'] as String,
-            password: row['password'] as String,
-            totalExpenditure: row['totalExpenditure'] as double,
-            totalRevenue: row['totalRevenue'] as double),
-        arguments: [email]);
-  }
-
-  @override
-  Future<int> insertUser(User user) async {
-    return _userInsertionAdapter.insertAndReturnId(user, OnConflictStrategy.abort);
+  Future<int> insertUser(User user) {
+    return _userInsertionAdapter.insertAndReturnId(
+        user, OnConflictStrategy.abort);
   }
 
   @override
@@ -261,7 +256,6 @@ class _$UserDao extends UserDao {
   Future<void> deleteUser(User user) async {
     await _userDeletionAdapter.delete(user);
   }
-
 }
 
 class _$WalletDao extends WalletDao {

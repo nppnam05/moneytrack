@@ -15,7 +15,19 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   var nameController = TextEditingController();
   var emailController = TextEditingController();
-  var passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUsers();
+  }
+
+  void _checkUsers() async {
+    var users = await DatabaseApi.getAllUsers();
+    if (users.isNotEmpty) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,16 +66,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             SizedBox(height: 10),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu',
-                border: UnderlineInputBorder(),
-                suffixIcon: Icon(Icons.visibility),
-              ),
-            ),
-            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // logic đăng ký
@@ -85,38 +87,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+
   Future<void> _dangKy() async {
     String name = nameController.text.trim();
     String email = emailController.text.trim();
-    String password = passwordController.text.trim();
 
-    if(name.isEmpty || email.isEmpty || password.isEmpty){
+    if(name.isEmpty || email.isEmpty){
        ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Bạn chưa nhập đầy đủ thông tin')));
       return;
     }
 
-    List<User> users = await DatabaseApi.getAllUsers();
-
-    bool checkEmail = users.any((it) => it.email == email);
-    bool checkUser = users.any((it) => it.name == name && it.password == password);
-    if (checkEmail) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Email đã tồn tại')));
-      return;
-    } else if (checkUser) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password hoặc UserName đã tồn tại')),
-      );
-      return;
-    }
-
     User newUser = User(
       name: name,
       email: email,
-      password: password,
       totalExpenditure: 0.0,
       totalRevenue: 0.0,
     );
