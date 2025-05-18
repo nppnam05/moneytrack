@@ -68,9 +68,7 @@ class _ProfileScreensState extends State<ProfileScreens>
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            _buildWalletCard(),
             _buildUserCard(),
-            _buildDepositCard(),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -111,32 +109,8 @@ class _ProfileScreensState extends State<ProfileScreens>
     );
   }
 
-  Widget _buildWalletCard() {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.account_balance_wallet),
-        title: Text('Số dư ví'),
-        subtitle: Text("${formatCurrency(wallet?.balance ?? 0)} VNĐ"),
-        trailing: Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          _showEditWalletDialog();
-        },
-      ),
-    );
-  }
 
-  Widget _buildDepositCard() {
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.attach_money),
-        title: Text('Nạp tiền vào ví'),
-        trailing: Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          _showDepositDialog();
-        },
-      ),
-    );
-  }
+
 
   void _loadData() async {
     _userId = LoginScreen.userid;
@@ -173,52 +147,6 @@ class _ProfileScreensState extends State<ProfileScreens>
       return formattedWhole;
     }
     return '$formattedWhole,$decimalPart';
-  }
-
-  // Hộp thoại chỉnh sửa số dư ví
-  void _showEditWalletDialog() {
-    final TextEditingController balanceController = TextEditingController(
-      text: wallet?.balance.toString() ?? "0",
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Chỉnh sửa số dư ví'),
-          content: TextField(
-            controller: balanceController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Số dư mới',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Đóng hộp thoại
-              },
-              child: Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final newBalance = double.tryParse(balanceController.text) ?? 0;
-                setState(() {
-                  wallet?.balance = newBalance; 
-                });
-
-                // Gọi API để cập nhật số dư trong cơ sở dữ liệu
-                await DatabaseApi.updateWallet(wallet!, onSuccess: () {}, onError: (error) {});
-
-                Navigator.of(context).pop(); // Đóng hộp thoại
-              },
-              child: Text('Lưu'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   // Hộp thoại chỉnh sửa tên người dùng
@@ -261,51 +189,6 @@ class _ProfileScreensState extends State<ProfileScreens>
                 Navigator.of(context).pop(); // Đóng hộp thoại
               },
               child: Text('Lưu'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showDepositDialog() {
-    final TextEditingController depositController = TextEditingController(
-      text: "10",
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Nạp tiền vào ví'),
-          content: TextField(
-            controller: depositController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Số tiền muốn nạp',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Đóng hộp thoại
-              },
-              child: Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final amount = double.tryParse(depositController.text) ?? 0;
-                 setState(() {
-                    wallet!.balance += amount;
-                  });
-                  await DatabaseApi.updateWallet(wallet!, onSuccess: () {}, onError: (error) {});
-                  Navigator.of(context).pop(); // Đóng hộp thoại
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Nạp tiền thành công!')),
-                  );
-              },
-              child: Text('Nạp'),
             ),
           ],
         );

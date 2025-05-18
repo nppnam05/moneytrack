@@ -25,7 +25,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _checkUsers() async {
     var users = await DatabaseApi.getAllUsers();
     if (users.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, '/login');
+       Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
     }
   }
 
@@ -100,6 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     User newUser = User(
+      id: 0,
       name: name,
       email: email,
       totalExpenditure: 0.0,
@@ -113,7 +114,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SnackBar(content: Text('Đăng ký thành công')),
         );
 
-        Navigator.pop(context); // Quay lại màn hình trước
+         Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
       },
       onError: (e) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -242,36 +242,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     IconData icon;
     Color color;
 
-    // Gán icon và màu dựa theo danh mục
-    switch (category.id) {
-      case 0:
-        icon = Icons.fastfood;
-        color = Colors.pinkAccent;
-        break;
-      case 1:
-        icon = Icons.home;
-        color = Colors.orangeAccent;
-        break;
-      case 2:
-        icon = Icons.shopping_bag;
-        color = Colors.blueGrey;
-        break;
-      case 3:
-        icon = Icons.directions_car;
-        color = Colors.teal;
-        break;
-      case 4:
-        icon = Icons.movie;
-        color = Colors.purple;
-        break;
-      case 5:
-        icon = Icons.lightbulb;
-        color = Colors.green;
-        break;
-      default:
-        icon = Icons.category;
-        color = Colors.grey;
-    }
+    // Gán icon và màu dựa theo category.id, nếu có thêm category mới thì tự sinh
+    final iconList = [
+      Icons.fastfood,
+      Icons.home,
+      Icons.shopping_bag,
+      Icons.directions_car,
+      Icons.movie,
+      Icons.lightbulb,
+      Icons.sports_soccer,
+      Icons.school,
+      Icons.local_hospital,
+      Icons.flight,
+      Icons.pets,
+      Icons.cake,
+      Icons.computer,
+      Icons.phone_android,
+      Icons.book,
+      Icons.music_note,
+      Icons.spa,
+      Icons.beach_access,
+      Icons.local_cafe,
+      Icons.local_grocery_store,
+      Icons.star,
+    ];
+
+    final colorList = [
+      Colors.pinkAccent,
+      Colors.orangeAccent,
+      Colors.blueGrey,
+      Colors.teal,
+      Colors.purple,
+      Colors.green,
+      Colors.redAccent,
+      Colors.amber,
+      Colors.indigo,
+      Colors.brown,
+      Colors.cyan,
+      Colors.deepOrange,
+      Colors.deepPurple,
+      Colors.lime,
+      Colors.lightBlue,
+      Colors.lightGreen,
+      Colors.yellow,
+      Colors.blue,
+      Colors.grey,
+      Colors.black54,
+    ];
+
+    icon = iconList[category.id!];
+    color = colorList[category.id!];
 
     return ListTile(
       leading: CircleAvatar(
@@ -287,35 +307,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadData() async {
-    int userID = LoginScreen.userid;
 
-    var resultUser = await DatabaseApi.getUserById(userID);
-    var resultWallet = await DatabaseApi.getWalletsByUserId(userID);
 
-    var transaction = await DatabaseApi.getTransactionsByUserId(userID);
-    var resultBudgets = await DatabaseApi.getBudgetsByUserId(userID);
+    var resultUser = await DatabaseApi.getUserById(0);
+    var resultWallet = await DatabaseApi.getWalletsByUserId(0);
+
+    var transaction = await DatabaseApi.getTransactionsByUserId(0);
+    var resultBudgets = await DatabaseApi.getBudgetsByUserId(0);
+    var resultCategory = await DatabaseApi.getAllCategories();
 
     setState(() {
       user = resultUser;
       balanceController.text = "${formatCurrency(resultWallet[0].balance)} VND";
 
-      listCategory = [
-        Categories(id: 0, name: "Ăn uống", cost: 0),
-        Categories(id: 1, name: "Tiền thuê nhà", cost: 0),
-        Categories(id: 2, name: "Mua sắm", cost: 0),
-        Categories(id: 3, name: "Di chuyển", cost: 0),
-        Categories(id: 4, name: "Giải trí", cost: 0),
-        Categories(id: 5, name: "Hóa đơn tiện ích", cost: 0),
-      ];
+      listCategory = resultCategory
+          .map((it) => Categories(id: it.id, name: it.name, cost: 0))
+          .toList();
 
-      categoriesNganSach = [
-        Categories(id: 0, name: "Ăn uống", cost: 0),
-        Categories(id: 1, name: "Tiền thuê nhà", cost: 0),
-        Categories(id: 2, name: "Mua sắm", cost: 0),
-        Categories(id: 3, name: "Di chuyển", cost: 0),
-        Categories(id: 4, name: "Giải trí", cost: 0),
-        Categories(id: 5, name: "Hóa đơn tiện ích", cost: 0),
-      ];
+     
+      categoriesNganSach = resultCategory
+          .map((it) => Categories(id: it.id, name: it.name, cost: 0))
+          .toList();
 
       var listTransaction;
       budgets.clear();
@@ -336,7 +348,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           .fold(0.0, (sum, item) => sum + item.amount);
 
       listTransaction.forEach((it) {
-        listCategory[it.categoryId].cost += it.amount;
+        if(it.type == "Chi") {
+          listCategory[it.categoryId].cost += it.amount;
+        }
       });
 
       listCategory.sort((a, b) => b.cost.compareTo(a.cost));

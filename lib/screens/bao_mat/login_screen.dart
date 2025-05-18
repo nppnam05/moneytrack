@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    themData();
+    //themData();
 
     forcus = FocusNode();
   }
@@ -44,9 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void themData() {
-    // DatabaseApi.insertUser(User(id: 0, name: "Nam", email: "nppnam05@gmail.com", password: "a", totalExpenditure: 0, totalRevenue: 0), onSuccess: (){}, onError: (Error){});
-    // DatabaseApi.insertWallet(Wallet(id: 0, userId: 0, balance: 1000), onSuccess: (){}, onError: (Error){});
-
     List<Categories> array = [
       Categories(id: 0, name: "Ăn uống", cost: 1000),
       Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
@@ -56,9 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
       Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
     ];
 
-    // array.forEach((it) =>
-    // DatabaseApi.insertCategory(it, onSuccess: (){}, onError: (Error){})
-    // );
+    array.forEach((it) =>
+    DatabaseApi.insertCategory(it, onSuccess: (){
+      print("Thêm danh mục thành công");
+    }, onError: (Error){})
+    );
 
     DateTime now = DateTime.now();
     DateTime mondayLastWeek = now.subtract(Duration(days: now.weekday + 6));
@@ -157,7 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    // transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){}, onError: (Error){}));
+    transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){
+      print("Thêm giao dịch thành công");
+    }, onError: (Error){}));
 
     List<Budget> budgets = [
       Budget(
@@ -186,7 +187,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    // budgets.forEach((it) => DatabaseApi.insertBudget(it, onSuccess: (){}, onError: (Error){}));
+    budgets.forEach((it) => DatabaseApi.insertBudget(it, onSuccess: (){
+      print("Thêm ngân sách thành công");
+    }, onError: (Error){}));
   }
 
   @override
@@ -258,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       // lệnh gửi mã xác thực
-      email_otp.guiMaOTP(emailControllor.text.trim());
+      email_otp.guiMaOTP(email);
       print("$user");
 
       Navigator.push(
@@ -272,7 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Tài khoản không tồn tại ')));
+      ).showSnackBar(SnackBar(content: Text('Email không tồn tại')));
       return;
     }
   }

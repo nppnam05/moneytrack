@@ -14,6 +14,53 @@ class ChiTieuPieChart extends StatefulWidget {
 class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
   int touchedIndex = -1;
 
+  final iconList = [
+    Icons.fastfood,
+    Icons.home,
+    Icons.shopping_bag,
+    Icons.directions_car,
+    Icons.movie,
+    Icons.lightbulb,
+    Icons.sports_soccer,
+    Icons.school,
+    Icons.local_hospital,
+    Icons.flight,
+    Icons.pets,
+    Icons.cake,
+    Icons.computer,
+    Icons.phone_android,
+    Icons.book,
+    Icons.music_note,
+    Icons.spa,
+    Icons.beach_access,
+    Icons.local_cafe,
+    Icons.local_grocery_store,
+    Icons.star,
+  ];
+
+  final colorList = [
+    Colors.pinkAccent,
+    Colors.orangeAccent,
+    Colors.blueGrey,
+    Colors.teal,
+    Colors.purple,
+    Colors.green,
+    Colors.redAccent,
+    Colors.amber,
+    Colors.indigo,
+    Colors.brown,
+    Colors.cyan,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.lime,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.yellow,
+    Colors.blue,
+    Colors.grey,
+    Colors.black54,
+  ];
+
   @override
   Widget build(BuildContext context) {
     double totalCost = widget.categories.fold(0, (sum, c) => sum + c.cost);
@@ -33,10 +80,12 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
               pieTouchData: PieTouchData(
                 touchCallback: (event, response) {
                   setState(() {
-                    if (!event.isInterestedForInteractions || response?.touchedSection == null) {
+                    if (!event.isInterestedForInteractions ||
+                        response?.touchedSection == null) {
                       touchedIndex = -1;
                     } else {
-                      touchedIndex = response!.touchedSection!.touchedSectionIndex;
+                      touchedIndex =
+                          response!.touchedSection!.touchedSectionIndex;
                     }
                   });
                 },
@@ -53,8 +102,8 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
       final category = widget.categories[index];
       final isTouched = index == touchedIndex;
       double percent = total == 0 ? 0 : (category.cost / total) * 100;
-      final color = _getColorForCategory(category.id!);
-      final icon = _getIconForCategory(category.id!);
+      final color = colorList[category.id!];
+      final icon = iconList[category.id!];
 
       return PieChartSectionData(
         color: color,
@@ -82,47 +131,7 @@ class _ChiTieuPieChartState extends State<ChiTieuPieChart> {
         border: Border.all(color: bgColor, width: 2),
         boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
       ),
-      child: Center(
-        child: Icon(icon, size: size * 0.6, color: bgColor),
-      ),
+      child: Center(child: Icon(icon, size: size * 0.6, color: bgColor)),
     );
-  }
-
-  Color _getColorForCategory(int id) {
-    switch (id) {
-      case 0:
-        return Colors.pinkAccent;
-      case 1:
-        return Colors.orangeAccent;
-      case 2:
-        return Colors.blueGrey;
-      case 3:
-        return Colors.teal;
-      case 4:
-        return Colors.purple;
-      case 5:
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getIconForCategory(int id) {
-    switch (id) {
-      case 0:
-        return Icons.fastfood;
-      case 1:
-        return Icons.home;
-      case 2:
-        return Icons.shopping_bag;
-      case 3:
-        return Icons.directions_car;
-      case 4:
-        return Icons.movie;
-      case 5:
-        return Icons.lightbulb;
-      default:
-        return Icons.category;
-    }
   }
 }
