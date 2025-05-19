@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
-import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
 
 class UpdTransaction extends StatefulWidget {
@@ -17,6 +16,9 @@ class UpdTransaction extends StatefulWidget {
 class _UpdTransactionState extends State<UpdTransaction> {
   List<TransactionModel> _transactions = [];
   List<Categories> _categories = [];
+  List<TransactionModel> listTuan = [];
+  List<TransactionModel> listThang = [];
+  List<List<TransactionModel>> listTungThang = [];
   DateTime? _selectedDate;
 
   // Danh sách loại giao dịch
@@ -37,17 +39,66 @@ class _UpdTransactionState extends State<UpdTransaction> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: _buildTransactionList(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Danh sách giao dịch Tuần này',
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.blue),
+            ),
+            const SizedBox(height: 10),
+            _buildTransactionList(listTuan),
+            const SizedBox(height: 10),
+            Text(
+              'Danh sách giao dịch Tháng',
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: Colors.blue),
+            ),
+            const SizedBox(height: 10),
+            _builListTheoThang(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _builListTheoThang(){
+    if(listTungThang.isEmpty) {
+      return const Center(
+        child: Text("Không có giao dịch nào trong tháng này"),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: listTungThang.length,
+      itemBuilder: (context, index) {
+        if (listTungThang[index].isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          children: [
+            Text(
+              'Tháng ${DateTime.fromMillisecondsSinceEpoch(listTungThang[index][0].transactionDate).month}',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            _buildTransactionList(listTungThang[index]),
+          ],
+        );
+      },
     );
   }
 
   // Hàm tạo ListView
-  Widget _buildTransactionList() {
+  Widget _buildTransactionList(List<TransactionModel> transactions) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: _transactions.length,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: transactions.length,
       itemBuilder: (context, index) {
-        return _itemTransaction(_transactions[index]);
+        return _itemTransaction(transactions[index]);
       },
     );
   }
@@ -69,7 +120,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
             ),
             title: Text("${transaction.amount.toStringAsFixed(2)} VNĐ"),
             subtitle: Text(
-              "Danh mục: ${_categories[transaction.categoryId]}\n"
+              "Danh mục: ${_categories.firstWhere((cate) => cate.id == transaction.categoryId, orElse: () => Categories(id: -1, name: 'Không xác định', cost: 0.0)).name}\n"
               "Ngày: ${DateTime.fromMillisecondsSinceEpoch(transaction.transactionDate).toString().substring(0, 10)}",
             ),
             onTap: () {
@@ -112,13 +163,12 @@ class _UpdTransactionState extends State<UpdTransaction> {
               border: OutlineInputBorder(),
             ),
             value: transaction.categoryId,
-            items:
-                _categories.map((category) {
-                  return DropdownMenuItem<int>(
-                    value: category.id,
-                    child: Text(category.name),
-                  );
-                }).toList(),
+            items: _categories.map((category) {
+              return DropdownMenuItem<int>(
+                value: category.id,
+                child: Text(category.name),
+              );
+            }).toList(),
             onChanged: (newValue) {
               setState(() {
                 transaction.categoryId = newValue!;
@@ -134,13 +184,12 @@ class _UpdTransactionState extends State<UpdTransaction> {
               border: OutlineInputBorder(),
             ),
             value: _selectedTypeIndex,
-            items:
-                _types.map((type) {
-                  return DropdownMenuItem<String>(
-                    value: type,
-                    child: Text(type),
-                  );
-                }).toList(),
+            items: _types.map((type) {
+              return DropdownMenuItem<String>(
+                value: type,
+                child: Text(type),
+              );
+            }).toList(),
             onChanged: (value) {
               setState(() {
                 _selectedTypeIndex = value!;
@@ -150,14 +199,14 @@ class _UpdTransactionState extends State<UpdTransaction> {
           ),
           const SizedBox(height: 16),
 
-          // TextField cho số tiền
-          TextField(
-            controller: amountController,
+          // TextFormField cho số tiền readOnly
+          TextFormField(
+            initialValue: transaction.amount.toString(),
             decoration: const InputDecoration(
               labelText: 'Số tiền (VNĐ)',
               border: OutlineInputBorder(),
             ),
-            keyboardType: TextInputType.number,
+            readOnly: true,
           ),
           const SizedBox(height: 16),
 
@@ -197,9 +246,9 @@ class _UpdTransactionState extends State<UpdTransaction> {
           ),
           const SizedBox(height: 16),
 
-          // Nút cập nhật và xóa
+          // Nút cập nhật ra giữa
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
                 onPressed: () {
@@ -210,46 +259,30 @@ class _UpdTransactionState extends State<UpdTransaction> {
                     _selectedDate ?? selectedDate,
                     _selectedType ?? _selectedTypeIndex,
                   );
-                  // xets lại giá trị
                   _selectedType = null;
                   _selectedDate = null;
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text('Cập nhật'),
               ),
-
-              ElevatedButton(
-                onPressed: () async {
-                  // chức năng xoá
-                  await DatabaseApi.deleteTransaction(
-                    transaction,
-                    onSuccess: () async {
-                      setState(() {
-                        _transactions.remove(transaction);
-                        _editingTransaction = null;
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Xoá giao dịch thành công!'),
-                        ),
-                      );
-                    },
-                    onError: (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Lỗi xoá giao dịch: $e')),
-                      );
-                    },
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Xóa'),
-              ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  void _deleteTransaction(TransactionModel transaction) {
+    // Xóa giao dịch
+    DatabaseApi.deleteTransaction(
+      transaction,
+      onSuccess: () {},
+      onError: (e) {},
+    );
+
+    setState(() {
+      _transactions.remove(transaction);
+    });
   }
 
   Future<void> _updateTransaction(
@@ -259,41 +292,15 @@ class _UpdTransactionState extends State<UpdTransaction> {
     DateTime selectedDate,
     String type,
   ) async {
-    // xét các trương hợp cập nhật lại
-    var totalTH = 0.0;
-
-    if (type == transaction.type) {
-      if (type == "Chi") {
-        totalTH += transaction.amount;
-        totalTH -= amount;
-      } else {
-        totalTH -= transaction.amount;
-        totalTH += amount;
-      }
-    } else {
-      if (type == "Chi") {
-        totalTH -= transaction.amount;
-        totalTH -= amount;
-      } else {
-        totalTH += transaction.amount;
-        totalTH += amount;
-      }
-    }
-
-
     // Cập nhật lại tổng thu/chi Wallet
     var walletsList = await DatabaseApi.getWalletsByUserId(transaction.userId);
     var wallet = walletsList[0];
 
-    // kiểm tra số dư ví có đủ không
-    if (wallet.balance < totalTH * -1) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Số dư ví không đủ!')));
-      return;
+    if (type == 'Chi') {
+      wallet.balance -= amount;
+    } else {
+      wallet.balance += amount;
     }
-
-    wallet.balance += totalTH;
 
     await DatabaseApi.updateWallet(
       wallet,
@@ -305,23 +312,8 @@ class _UpdTransactionState extends State<UpdTransaction> {
       },
     );
 
-    // cập nhập ngân sách nếu có
-    var budgetsList = await DatabaseApi.getBudgetsByUserId(transaction.userId);
-    var budget =
-        budgetsList
-            .where((budget) => budget.categoryId == transaction.categoryId)
-            .firstOrNull;
-
-    if (budget != null) {
-      budget.amount += totalTH;
-
-      DatabaseApi.updateBudget(budget, onSuccess: () {}, onError: (e) {});
-    }
-
-
     setState(() {
       // Cập nhật thông tin giao dịch
-      transaction.amount = amount;
       transaction.description = desc;
       transaction.transactionDate = selectedDate.millisecondsSinceEpoch;
       transaction.type = type;
@@ -332,29 +324,59 @@ class _UpdTransactionState extends State<UpdTransaction> {
     // Cập nhật giao dịch trong cơ sở dữ liệu
     DatabaseApi.updateTransaction(
       transaction,
-      onSuccess: () {
-        print("Cập nhật giao dịch thành công");
-      },
-      onError: (e) {
-        print("Lỗi khi cập nhật giao dịch: $e");
-      },
+      onSuccess: () {},
+      onError: (e) {},
     );
   }
 
   Future<void> _loadData() async {
-    int id_user = LoginScreen.userid;
-
-    _categories.clear();
-    _transactions.clear();
     // Lấy danh sách từ cơ sở dữ liệu
-    final categoriesFromDb = await DatabaseApi.getAllCategories();
-    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(
-      id_user,
-    );
+    var categoriesFromDb = await DatabaseApi.getAllCategories();
+    var transactionFromDb = await DatabaseApi.getTransactionsByUserId(0);
+
+    transactionFromDb.sort((a, b) {
+      return b.createdAt.compareTo(a.createdAt);
+    });
 
     setState(() {
       _categories = categoriesFromDb;
-      _transactions = transactionFromDb;
+      listTuan =
+          transactionFromDb
+              .where((transaction) => isThisWeek(transaction.transactionDate))
+              .toList();
     });
+    listThang =
+        transactionFromDb
+            .where((transaction) => !isThisWeek(transaction.transactionDate))
+            .toList();
+
+    var time = DateTime.now();
+    for(int i = time.month; i > 0; --i) {
+      var list = listThang
+          .where((transaction) => DateTime.fromMillisecondsSinceEpoch(transaction.transactionDate).month == i)
+          .toList();
+      listTungThang.add(list);
+    }
+  }
+
+  bool isThisWeek(int timestamp) {
+    final now = DateTime.now();
+
+    // Tính ngày đầu tuần (Thứ Hai)
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final start = DateTime(
+      startOfWeek.year,
+      startOfWeek.month,
+      startOfWeek.day,
+    );
+
+    // Ngày cuối tuần
+    final end = start
+        .add(const Duration(days: 7))
+        .subtract(const Duration(milliseconds: 1));
+
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+
+    return !date.isBefore(start) && !date.isAfter(end);
   }
 }

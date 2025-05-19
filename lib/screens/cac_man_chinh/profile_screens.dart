@@ -72,8 +72,7 @@ class _ProfileScreensState extends State<ProfileScreens>
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // sét lại trạng thái thông báo
-                ShowNotification.checkMap.updateAll((key, value) => false);
+                ShowNotification.hasShownWalletWarning = false;
 
                 Navigator.of(context).pushNamedAndRemoveUntil(
                   '/login',

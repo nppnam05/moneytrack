@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:moneytrack/models/budget.dart';
 import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/transaction.dart';
 import 'package:intl/intl.dart';
-import 'package:moneytrack/models/user.dart';
-import 'package:moneytrack/models/wallet.dart';
-import 'package:moneytrack/screens/bao_mat/login_screen.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
 
 class AddTransaction extends StatefulWidget {
@@ -20,8 +16,6 @@ class AddTransaction extends StatefulWidget {
 class _AddTransactionState extends State<AddTransaction> {
   // Danh sách danh mục
   List<Categories> _categories = [];
-  List<TransactionModel> _transactionModel = [];
-  List<Budget> _budgets = [];
   int _userId = 0;
 
   // Danh sách loại giao dịch
@@ -170,6 +164,7 @@ class _AddTransactionState extends State<AddTransaction> {
 
     final double amount = double.parse(_amountController.text);
 
+// tạo mới giao dịch
     final newTransaction = TransactionModel(
       userId: _userId,
       categoryId: _selectedCategoryId!,
@@ -185,19 +180,11 @@ class _AddTransactionState extends State<AddTransaction> {
     var wallet = wallets[0];
 
     if (newTransaction.type == 'Chi') {
-      // kiểm tra số dư ví có đủ không
-      if (wallet.balance < newTransaction.amount) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Số dư ví không đủ!')));
-        return;
-      }
-
       wallet.balance = wallet.balance - newTransaction.amount;
     } else {
       wallet.balance = wallet.balance + newTransaction.amount;
     }
-
+// cập nhật lại số dư ví
     DatabaseApi.updateWallet(
       wallet,
       onSuccess: () {
@@ -207,22 +194,6 @@ class _AddTransactionState extends State<AddTransaction> {
         print('Lỗi khi cập nhật: $e');
       },
     );
-
-    Budget? budgets =
-        _budgets
-            .where(
-              (budget) =>
-                  budget.categoryId == _selectedCategoryId &&
-                  budget.userId == _userId,
-            )
-            .firstOrNull;
-
-    if (budgets != null) {
-      if (_selectedType == 'Chi') {
-        budgets.amount = budgets.amount - amount;
-        DatabaseApi.updateBudget(budgets, onSuccess: () {}, onError: (e) {});
-      }
-    }
 
     // Thêm giao dịch
     await DatabaseApi.insertTransaction(
@@ -240,28 +211,15 @@ class _AddTransactionState extends State<AddTransaction> {
           _selectedDate = null;
         });
       },
-      onError: (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi khi thêm giao dịch: $e')));
-      },
+      onError: (e) {},
     );
   }
 
   Future<void> _loadData() async {
-    int id_user = LoginScreen.userid;
-
     final categoriesFromDb = await DatabaseApi.getAllCategories();
-    final transactionFromDb = await DatabaseApi.getTransactionsByUserId(
-      id_user,
-    );
-    final budgetsFromDb = await DatabaseApi.getBudgetsByUserId(id_user);
 
     setState(() {
-      _userId = id_user;
       _categories = categoriesFromDb;
-      _transactionModel = transactionFromDb;
-      _budgets = budgetsFromDb;
     });
   }
 }

@@ -211,20 +211,23 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> with WidgetsBindingOb
       userId: _userID,
       categoryId: _selectedCategory!.id!,
       amount: double.parse(_amountController.text),
+      isDeducted: false,
       month: int.parse(_monthController.text),
       year: int.parse(_yearController.text),
       createdAt:DateTime.now().millisecondsSinceEpoch, 
     );
 
+    var time = DateTime.now();
+    // Cập nhật lại số dư trong ví
+    if(time.month > newBudget.month && time.year >= newBudget.year){
+      wallets[0].balance -= newBudget.amount;
+      DatabaseApi.updateWallet(wallets[0], onSuccess: (){print("update wallet thanh cong");}, onError: (Error){});
+      newBudget.isDeducted = true; // xét lại trạng thái là đã trừ tiền
+    }
+
+
     var budgetTemp = budgets.where((it) =>it.userId == _userID && it.categoryId == newBudget.categoryId && it.month == newBudget.month && it.year == newBudget.year).firstOrNull;
 
-    double totalAmount = budgets.fold(0.0, (sum, budget) { return sum + budget.amount; });
-    if(wallets[0].balance < totalAmount + newBudget.amount){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Số dư trong ví không đủ')),
-      );
-      return;
-    }
 
     if(budgetTemp != null){
       budgetTemp.amount += newBudget.amount;

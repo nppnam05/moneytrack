@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/categories.dart';
 import 'package:moneytrack/models/user.dart';
-import 'package:moneytrack/screens/bao_mat/login_screen.dart';
+import 'package:moneytrack/models/wallet.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
 import 'package:moneytrack/utils/show_notification.dart';
 import '../../models/budget.dart';
@@ -27,9 +27,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   List<Categories> listCategory = [];
   List<Categories> listCategoryMax = [];
   List<Categories> categoriesNganSach = [];
-  
 
   List<Budget> budgets = [];
+  Wallet wallet = Wallet(userId: 0, balance: 0);
   double _tongThu = 0;
   double _tongChi = 0;
 
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               'Danh sách ngân sách tháng này',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            _itemListNganSach(categoriesNganSach), // danh sách ngân sách
+            _itemListChiTieu(categoriesNganSach), // danh sách ngân sách
           ],
         ),
       ),
@@ -195,7 +195,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   controller: balanceController,
                   readOnly: true,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 24, color: Colors.green),
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: (wallet.balance > 0) ? Colors.green : Colors.red,
+                  ),
                   decoration: const InputDecoration.collapsed(hintText: ''),
                 ),
               ],
@@ -220,20 +223,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         } else {
           return SizedBox();
         }
-      },
-    );
-  }
-
-  // Danh sách Ngan sách
-  Widget _itemListNganSach(List<Categories> Category) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: Category.length,
-      itemBuilder: (context, index) {
-        final categoryStatic = Category[index];
-
-        return _createItemChiTieu(categoryStatic);
       },
     );
   }
@@ -307,30 +296,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _loadData() async {
-
-
-    var resultUser = await DatabaseApi.getUserById(0);
     var resultWallet = await DatabaseApi.getWalletsByUserId(0);
+    wallet = resultWallet[0];
 
     var transaction = await DatabaseApi.getTransactionsByUserId(0);
     var resultBudgets = await DatabaseApi.getBudgetsByUserId(0);
     var resultCategory = await DatabaseApi.getAllCategories();
 
+    // thoong báo nếu số dư ví âm
+    showNotification();
+
+    // Cập nhật số dư ví nếu tháng hiện tại lớn hơn tháng ngân sách
+    var time = DateTime.now();
+    for (var it in resultBudgets) {
+      if (time.month - it.month == 1 &&
+          time.year == it.year &&
+          it.isDeducted == false) {
+        resultWallet[0].balance -= it.amount;
+        it.isDeducted = true;
+        DatabaseApi.updateBudget(it, onSuccess: () {}, onError: (Error) {});
+      }
+    }
+
+    DatabaseApi.updateWallet(
+      resultWallet[0],
+      onSuccess: () {},
+      onError: (Error) {},
+    );
+
+    // khởi tạo các danh sách categories
+    listCategory =
+        resultCategory
+            .map((it) => Categories(id: it.id, name: it.name, cost: 0))
+            .toList();
+
+    categoriesNganSach =
+        resultCategory
+            .map((it) => Categories(id: it.id, name: it.name, cost: 0))
+            .toList();
+
     setState(() {
-      user = resultUser;
+      // số dư ví
       balanceController.text = "${formatCurrency(resultWallet[0].balance)} VND";
 
-      listCategory = resultCategory
-          .map((it) => Categories(id: it.id, name: it.name, cost: 0))
-          .toList();
-
-     
-      categoriesNganSach = resultCategory
-          .map((it) => Categories(id: it.id, name: it.name, cost: 0))
-          .toList();
-
+      // danh sách chi tiêu theo thời gian
       var listTransaction;
-      budgets.clear();
 
       if (_selectedTime == TimeRange.month) {
         listTransaction =
@@ -340,6 +350,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             transaction.where((it) => isThisWeek(it.transactionDate)).toList();
       }
 
+      // Thu, Chi theo thời gian
       _tongThu = listTransaction
           .where((it) => it.type == "Thu")
           .fold(0.0, (sum, item) => sum + item.amount);
@@ -347,16 +358,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           .where((it) => it.type == "Chi")
           .fold(0.0, (sum, item) => sum + item.amount);
 
+      // danh sách chi tiêu theo danh mục
       listTransaction.forEach((it) {
-        if(it.type == "Chi") {
-          listCategory[it.categoryId].cost += it.amount;
+        if (it.type == "Chi") {
+          var cate = listCategory.firstWhere(
+            (cate) => cate.id == it.categoryId,
+            orElse: () => Categories(id: -1, name: '', cost: 0),
+          );
+          if (cate.id != -1) {
+            cate.cost += it.amount;
+          }
         }
       });
 
       listCategory.sort((a, b) => b.cost.compareTo(a.cost));
+      // danh sách chi tiêu nhiều nhất
       listCategoryMax = listCategory.take(3).toList();
       categories = listCategory.sublist(3);
 
+      // danh sách ngân sách theo tháng
       final now = DateTime.now();
       budgets =
           resultBudgets
@@ -364,29 +384,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               .toList();
 
       for (var it in budgets) {
-        categoriesNganSach[it.categoryId].cost += it.amount;
+        var cateTemp = categoriesNganSach.firstWhere(
+          (cate) => cate.id == it.categoryId,
+          orElse: () => Categories(id: -1, name: '', cost: 0),
+        );
+        cateTemp.cost += it.amount;
       }
 
       categoriesNganSach.sort((a, b) => b.cost.compareTo(a.cost));
     });
+  }
 
-    for (int i = 0; i < categoriesNganSach.length; i++) {
-      if (ShowNotification.checkMap[categoriesNganSach[i].name] == null || ShowNotification.checkMap[categoriesNganSach[i].name] == false) {
-        ShowNotification.checkMap[categoriesNganSach[i].name] = true;
-        if (categoriesNganSach[i].cost < 0) {
-          await ShowNotification.showBudgetNotification(
-            'Cảnh báo ngân sách!',
-            'Bạn đã vượt quá ngân sách danh mục ${categoriesNganSach[i].name}. Bạn chỉ còn ${formatCurrency(categoriesNganSach[i].cost)} VNĐ.',
-            i,
-          );
-        } else if (categoriesNganSach[i].cost == 0) {
-          await ShowNotification.showBudgetNotification(
-            'Cảnh báo ngân sách!',
-            'Bạn đã sử dụng hết ngân sách danh mục ${categoriesNganSach[i].name}',
-            i,
-          );
-        }
+  Future<void> showNotification() async {
+    if (ShowNotification.hasShownWalletWarning == false && wallet.balance <= 0) {
+      ShowNotification.hasShownWalletWarning = true;
+      // thông báo nếu số dư ví âm
+      if (wallet.balance <= -100) {
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text(
+                  'Cảnh báo ví âm',
+                  style: TextStyle(color: Colors.red),
+                ),
+                content: Text(
+                  'Số dư ví của bạn đang âm! Vui lòng nạp thêm tiền để tiếp tục sử dụng.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('Đóng'),
+                  ),
+                ],
+              ),
+        );
+      } else if (wallet.balance <= -10) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Số dư ví của bạn đang âm! Vui lòng nạp thêm tiền.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
+
+
+      // Hiển thị thông báo nếu ví hết tiền
+      // Kiểm tra số dư ví, nếu hết tiền thì hiển thị thông báo
+      await ShowNotification.showBudgetNotification(
+        'Cảnh báo ví!',
+        'Số dư ví của bạn đã hết. Vui lòng nạp thêm tiền để tiếp tục sử dụng.',
+        0,
+      );
     }
   }
 

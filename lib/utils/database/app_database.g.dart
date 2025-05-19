@@ -108,15 +108,15 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `totalExpenditure` REAL NOT NULL, `totalRevenue` REAL NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `wallets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `balance` REAL NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `wallets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `balance` REAL NOT NULL, FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `transactions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `categoryId` INTEGER NOT NULL, `type` TEXT NOT NULL, `amount` REAL NOT NULL, `description` TEXT NOT NULL, `transactionDate` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `transactions` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `categoryId` INTEGER NOT NULL, `type` TEXT NOT NULL, `amount` REAL NOT NULL, `description` TEXT NOT NULL, `transactionDate` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`categoryId`) REFERENCES `categories` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `reminders` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `title` TEXT NOT NULL, `message` TEXT NOT NULL, `remindAt` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `categories` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `cost` REAL NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `budgets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `categoryId` INTEGER NOT NULL, `amount` REAL NOT NULL, `month` INTEGER NOT NULL, `year` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `budgets` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `categoryId` INTEGER NOT NULL, `amount` REAL NOT NULL, `isDeducted` INTEGER NOT NULL, `month` INTEGER NOT NULL, `year` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`categoryId`) REFERENCES `categories` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -669,6 +669,7 @@ class _$BudgetDao extends BudgetDao {
                   'userId': item.userId,
                   'categoryId': item.categoryId,
                   'amount': item.amount,
+                  'isDeducted': item.isDeducted ? 1 : 0,
                   'month': item.month,
                   'year': item.year,
                   'createdAt': item.createdAt
@@ -682,6 +683,7 @@ class _$BudgetDao extends BudgetDao {
                   'userId': item.userId,
                   'categoryId': item.categoryId,
                   'amount': item.amount,
+                  'isDeducted': item.isDeducted ? 1 : 0,
                   'month': item.month,
                   'year': item.year,
                   'createdAt': item.createdAt
@@ -695,6 +697,7 @@ class _$BudgetDao extends BudgetDao {
                   'userId': item.userId,
                   'categoryId': item.categoryId,
                   'amount': item.amount,
+                  'isDeducted': item.isDeducted ? 1 : 0,
                   'month': item.month,
                   'year': item.year,
                   'createdAt': item.createdAt
@@ -720,6 +723,7 @@ class _$BudgetDao extends BudgetDao {
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,
+            isDeducted: (row['isDeducted'] as int) != 0,
             month: row['month'] as int,
             year: row['year'] as int,
             createdAt: row['createdAt'] as int));
@@ -733,6 +737,7 @@ class _$BudgetDao extends BudgetDao {
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,
+            isDeducted: (row['isDeducted'] as int) != 0,
             month: row['month'] as int,
             year: row['year'] as int,
             createdAt: row['createdAt'] as int),
@@ -747,6 +752,7 @@ class _$BudgetDao extends BudgetDao {
             userId: row['userId'] as int,
             categoryId: row['categoryId'] as int,
             amount: row['amount'] as double,
+            isDeducted: (row['isDeducted'] as int) != 0,
             month: row['month'] as int,
             year: row['year'] as int,
             createdAt: row['createdAt'] as int),

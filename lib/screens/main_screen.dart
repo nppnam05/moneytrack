@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moneytrack/screens/cac_man_chinh/category_screen.dart';
 import 'cac_man_chinh/home_screen.dart';
 import 'cac_man_chinh/transaction_screen.dart';
 import 'cac_man_chinh/budget_screen.dart';
@@ -13,11 +14,12 @@ class MainManagerScreen extends StatefulWidget {
 }
 
 class _MainManagerScreenState extends State<MainManagerScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
 
 
   final List<Widget> _screens = [
     HomeScreen(title: 'Trang chủ'),
+    CategoryScreen(title: 'Loại giao dịch'),
     TransactionsScreen(title: 'Sổ giao dịch'),
     BudgetScreen(title: 'Ngân sách'),
     ProfileScreens(title: 'Hồ sơ'),
@@ -41,6 +43,7 @@ class _MainManagerScreenState extends State<MainManagerScreen> {
         showUnselectedLabels: true,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ'),
+          BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Loại GD'),
           BottomNavigationBarItem(icon: Icon(Icons.receipt),label: 'Giao dịch',),
           BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet),label: 'Ngân sách',),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Hồ sơ'),

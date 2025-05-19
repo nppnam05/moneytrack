@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     array.forEach((it) =>
     DatabaseApi.insertCategory(it, onSuccess: (){
-      print("Thêm danh mục thành công");
+     
     }, onError: (Error){})
     );
 
@@ -70,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         type: "Chi",
         amount: 500.0,
         description: "Bữa trưa",
-        transactionDate: 1623675623000, // Ví dụ về timestamp
+        transactionDate: DateTime.now().millisecondsSinceEpoch, // Ví dụ về timestamp
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
         type: "Chi",
         amount: 100.0,
         description: "Thuê nhà tháng này",
-        transactionDate: 1623675623000,
+        transactionDate: DateTime.now().millisecondsSinceEpoch,
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
@@ -88,71 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
         type: "Chi",
         amount: 50.0,
         description: "Mua quần áo",
-        transactionDate: 1623675623000,
+        transactionDate: DateTime.now().millisecondsSinceEpoch,
         createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 3, // "Di chuyển"
-        type: "Chi",
-        amount: 200.0,
-        description: "Di chuyển bằng taxi",
-        transactionDate: 1623675623000,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 4, // "Giải trí"
-        type: "Chi",
-        amount: 150.0,
-        description: "Đi xem phim",
-        transactionDate: 1623675623000,
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 0, // "Ăn uống"
-        type: "Chi",
-        amount: 100.0,
-        description: "Bữa trưa",
-        transactionDate: 1623675623000, // Ví dụ về timestamp
-        createdAt: mondayLastWeekMillis,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 1, // "Tiền thuê nhà"
-        type: "Chi",
-        amount: 100.0,
-        description: "Thuê nhà tháng này",
-        transactionDate: 1623675623000,
-        createdAt: mondayLastWeekMillis,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 2, // "Mua sắm"
-        type: "Chi",
-        amount: 500.0,
-        description: "Mua quần áo",
-        transactionDate: 1623675623000,
-        createdAt: mondayLastWeekMillis,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 3, // "Di chuyển"
-        type: "Chi",
-        amount: 300.0,
-        description: "Di chuyển bằng taxi",
-        transactionDate: 1623675623000,
-        createdAt: mondayLastWeekMillis,
-      ),
-      TransactionModel(
-        userId: 0,
-        categoryId: 4, // "Giải trí"
-        type: "Chi",
-        amount: 200.0,
-        description: "Đi xem phim",
-        transactionDate: 1623675623000,
-        createdAt: mondayLastWeekMillis,
       ),
     ];
 
@@ -165,6 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
         userId: 0,
         categoryId: 1,
         amount: 5000000,
+        isDeducted: false,
         month: 5,
         year: 2025,
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -173,6 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
         userId: 0,
         categoryId: 2,
         amount: 3000000,
+        isDeducted: false,
         month: 5,
         year: 2025,
         createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -181,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
         userId: 0,
         categoryId: 3,
         amount: 2000000,
+        isDeducted: false,
         month: 5,
         year: 2025,
         createdAt: DateTime.now().millisecondsSinceEpoch,

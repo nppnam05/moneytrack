@@ -2,7 +2,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../../main.dart'; // Để dùng flutterLocalNotificationsPlugin đã khởi tạo ở main.dart
 
 class ShowNotification {
-  static Map<String, bool> checkMap = {};
+  static bool hasShownWalletWarning = false;
+
   static Future<void> showBudgetNotification(String title, String body, int id) async {
     //  Cấu hình chi tiết cho thông báo Android (channel, mức độ ưu tiên, mô tả...)
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
