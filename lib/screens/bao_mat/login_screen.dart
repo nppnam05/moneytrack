@@ -27,12 +27,35 @@ class _LoginScreenState extends State<LoginScreen> {
   var email_otp = EmailService();
 
   @override
-  void initState() {
+  void initState() async {
     // TODO: implement initState
     super.initState();
     //themData();
+    themCate();
 
     forcus = FocusNode();
+  }
+
+  Future<void> themCate() async {
+     var listCate = await DatabaseApi.getAllCategories();
+    if (listCate.isEmpty) {
+      List<Categories> array = [
+        Categories(id: 0, name: "Ăn uống", cost: 1000),
+        Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
+        Categories(id: 2, name: "Mua sắm", cost: 50),
+        Categories(id: 3, name: "Di chuyển", cost: 200),
+        Categories(id: 4, name: "Giải trí", cost: 150),
+        Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
+      ];
+
+      array.forEach(
+        (it) => DatabaseApi.insertCategory(
+          it,
+          onSuccess: () {},
+          onError: (Error) {},
+        ),
+      );
+    }
   }
 
   @override
@@ -44,21 +67,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void themData() {
-    List<Categories> array = [
-      Categories(id: 0, name: "Ăn uống", cost: 1000),
-      Categories(id: 1, name: "Tiền thuê nhà", cost: 100),
-      Categories(id: 2, name: "Mua sắm", cost: 50),
-      Categories(id: 3, name: "Di chuyển", cost: 200),
-      Categories(id: 4, name: "Giải trí", cost: 150),
-      Categories(id: 5, name: "Hóa đơn tiện ích", cost: 80),
-    ];
-
-    array.forEach((it) =>
-    DatabaseApi.insertCategory(it, onSuccess: (){
-     
-    }, onError: (Error){})
-    );
-
     DateTime now = DateTime.now();
     DateTime mondayLastWeek = now.subtract(Duration(days: now.weekday + 6));
     int mondayLastWeekMillis = mondayLastWeek.millisecondsSinceEpoch;
@@ -70,7 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
         type: "Chi",
         amount: 500.0,
         description: "Bữa trưa",
-        transactionDate: DateTime.now().millisecondsSinceEpoch, // Ví dụ về timestamp
+        transactionDate:
+            DateTime.now().millisecondsSinceEpoch, // Ví dụ về timestamp
         createdAt: DateTime.now().millisecondsSinceEpoch,
       ),
       TransactionModel(
@@ -93,9 +102,15 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    transactions.forEach((it) => DatabaseApi.insertTransaction(it, onSuccess: (){
-      print("Thêm giao dịch thành công");
-    }, onError: (Error){}));
+    transactions.forEach(
+      (it) => DatabaseApi.insertTransaction(
+        it,
+        onSuccess: () {
+          print("Thêm giao dịch thành công");
+        },
+        onError: (Error) {},
+      ),
+    );
 
     List<Budget> budgets = [
       Budget(
@@ -127,9 +142,15 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     ];
 
-    budgets.forEach((it) => DatabaseApi.insertBudget(it, onSuccess: (){
-      print("Thêm ngân sách thành công");
-    }, onError: (Error){}));
+    budgets.forEach(
+      (it) => DatabaseApi.insertBudget(
+        it,
+        onSuccess: () {
+          print("Thêm ngân sách thành công");
+        },
+        onError: (Error) {},
+      ),
+    );
   }
 
   @override
