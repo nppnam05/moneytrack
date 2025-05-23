@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   var email_otp = EmailService();
 
   @override
-  void initState() async {
+  void initState() {
     // TODO: implement initState
     super.initState();
     //themData();

@@ -272,19 +272,6 @@ class _UpdTransactionState extends State<UpdTransaction> {
     );
   }
 
-  void _deleteTransaction(TransactionModel transaction) {
-    // Xóa giao dịch
-    DatabaseApi.deleteTransaction(
-      transaction,
-      onSuccess: () {},
-      onError: (e) {},
-    );
-
-    setState(() {
-      _transactions.remove(transaction);
-    });
-  }
-
   Future<void> _updateTransaction(
     TransactionModel transaction,
     double amount,
