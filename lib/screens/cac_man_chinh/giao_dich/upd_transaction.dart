@@ -345,6 +345,7 @@ class _UpdTransactionState extends State<UpdTransaction> {
       listTungThang.add(list);
     }
   }
+  
 
   bool isThisWeek(int timestamp) {
     final now = DateTime.now();
