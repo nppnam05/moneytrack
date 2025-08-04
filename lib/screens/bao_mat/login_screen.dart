@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:moneytrack/models/user.dart';
 import 'package:moneytrack/models/wallet.dart';
-import 'package:moneytrack/screens/bao_mat/verifycode_screen.dart';
+import 'package:moneytrack/screens/main_screen.dart';
 import 'package:moneytrack/screens/screens.dart';
 import 'package:moneytrack/utils/database/database_api.dart';
 import 'package:collection/collection.dart';
-import 'package:moneytrack/utils/email_otp.dart';
 import '../../models/categories.dart';
 import '../../models/transaction.dart';
 import '../../models/budget.dart';
@@ -24,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late FocusNode forcus;
 
   var emailControllor = TextEditingController();
-  var email_otp = EmailService();
+  
 
   @override
   void initState() {
@@ -37,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> themCate() async {
-     var listCate = await DatabaseApi.getAllCategories();
+    var listCate = await DatabaseApi.getAllCategories();
     if (listCate.isEmpty) {
       List<Categories> array = [
         Categories(id: 0, name: "Ăn uống", cost: 1000),
@@ -222,7 +221,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (user != null) {
       // lệnh gửi mã xác thực
-      email_otp.guiMaOTP(email);
       print("$user");
 
       Navigator.push(
@@ -230,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(
           builder:
               (context) =>
-                  VerifyCodeScreen(title: "Xác thực", userID: user.id!),
+                  MainManagerScreen(),
         ),
       );
     } else {

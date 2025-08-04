@@ -7,7 +7,6 @@ import 'cac_man_chinh/profile_screens.dart';
 
 class MainManagerScreen extends StatefulWidget {
   const MainManagerScreen({super.key});
-  
 
   @override
   _MainManagerScreenState createState() => _MainManagerScreenState();
@@ -15,7 +14,6 @@ class MainManagerScreen extends StatefulWidget {
 
 class _MainManagerScreenState extends State<MainManagerScreen> {
   int _selectedIndex = 0;
-
 
   final List<Widget> _screens = [
     HomeScreen(title: 'Trang chủ'),
@@ -34,7 +32,8 @@ class _MainManagerScreenState extends State<MainManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      body: IndexedStack(index: _selectedIndex, children: _screens),
+      
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
@@ -44,8 +43,14 @@ class _MainManagerScreenState extends State<MainManagerScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Trang chủ'),
           BottomNavigationBarItem(icon: Icon(Icons.category), label: 'Loại GD'),
-          BottomNavigationBarItem(icon: Icon(Icons.receipt),label: 'Giao dịch',),
-          BottomNavigationBarItem(icon: Icon(Icons.account_balance_wallet),label: 'Ngân sách',),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Giao dịch',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance_wallet),
+            label: 'Ngân sách',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Hồ sơ'),
         ],
       ),

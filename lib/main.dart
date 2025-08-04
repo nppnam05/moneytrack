@@ -31,6 +31,12 @@ void main() async  {
   runApp(const MyApp());
 }
 
+class AppRoutes{
+  static const String login = "login";
+  static const String main_manager = "main_manager";
+  static const String register = "register";
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -42,28 +48,19 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/register',
+      initialRoute: '/${AppRoutes.main_manager}', 
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
         Widget? page;
         // dựa vào dữ liệu truyền đến để lấy màn
         switch (settings.name) {
-          case '/login':
+          case '/${AppRoutes.login}':
             page = LoginScreen(title: 'Đăng nhập',);
             break;
-          case '/main_manager':
+          case '/${AppRoutes.main_manager}':
             page = MainManagerScreen();
             break;
-          case '/transactions':
-            page = TransactionsScreen(title: 'sổ giao dịch',);
-            break;
-          case '/budget':
-            page = BudgetScreen(title: 'ngân sách',);
-            break;
-          case '/profile':
-            page = ProfileScreens(title: '...',);
-            break;
-          case '/register':
+          case '/${AppRoutes.register}':
             page = RegisterScreen(title: 'Đăng ký',);
             break;
         }
@@ -78,44 +75,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Local Notifications Example'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            await _showNotification();
-          },
-          child: const Text('Show Notification'),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your_channel_id',
-      'your_channel_name',
-      channelDescription: 'your_channel_description',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Hello!',
-      'This is a test notification.',
-      platformChannelSpecifics,
-    );
-  }
-}
