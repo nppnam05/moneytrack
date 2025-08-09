@@ -25,7 +25,7 @@ void main() async  {
   // kiểm tra xem đã có quyền chưa
   // nếu chưa có quyền thì sẽ xin quyền
   await flutterLocalNotificationsPlugin
-    .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
     ?.requestNotificationsPermission();
 
   runApp(const MyApp());
@@ -51,25 +51,21 @@ class MyApp extends StatelessWidget {
       initialRoute: '/${AppRoutes.main_manager}', 
       onGenerateRoute: (settings) {
         // Áp dụng CustomRoute cho tất cả các route
-        Widget? page;
+        Widget? screen;
         // dựa vào dữ liệu truyền đến để lấy màn
         switch (settings.name) {
           case '/${AppRoutes.login}':
-            page = LoginScreen(title: 'Đăng nhập',);
+            screen = LoginScreen(title: 'Đăng nhập',);
             break;
           case '/${AppRoutes.main_manager}':
-            page = MainManagerScreen();
+            screen = MainManagerScreen();
             break;
           case '/${AppRoutes.register}':
-            page = RegisterScreen(title: 'Đăng ký',);
+            screen = RegisterScreen(title: 'Đăng ký',);
             break;
         }
         
-        // nếu màn này có thì sẽ hiện ra
-        if (page != null) {
-          return MaterialPageRoute(builder: (_) => page!);
-        }
-        return null;
+        return MaterialPageRoute(builder: (_) => screen!);
       },
     );
   }
